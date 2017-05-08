@@ -59,16 +59,16 @@ function draw() {
 <script>
 
 var gen = triangulate();
+
 function frame() {
-    if (gen.next().value) {
-        // requestAnimationFrame(frame);
-    }
+    if (gen.next().done) return;
     draw();
+    requestAnimationFrame(frame);
 }
 draw();
 
-document.onkeypress = frame;
-// requestAnimationFrame(frame);
+// document.onkeypress = frame;
+requestAnimationFrame(frame);
 
 </script>
 

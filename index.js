@@ -1,12 +1,12 @@
 'use strict';
 
-// var points = require('../concaveman/tmp/test.json').slice(0, 65000);
-// var i;
+var points = require('../concaveman/tmp/test.json');
+var i;
 
-var points = [];
-for (var i = 0; i < 65000; i++) {
-    points.push([Math.random() * 800, Math.random() * 600]);
-}
+// var points = [];
+// for (var i = 0; i < 100; i++) {
+//     points.push([Math.random() * 800, Math.random() * 600]);
+// }
 
 console.log(points.length + ' points');
 
@@ -110,73 +110,52 @@ console.timeEnd('sort');
 
 console.time('triangulate');
 
-var hull = insertNode(i0);
-hull = insertNode(i1, hull);
-hull = insertNode(i2, hull);
+var hull = insertNode(coords, i0);
+hull = insertNode(coords, i1, hull);
+hull = insertNode(coords, i2, hull);
 
-var triangles = [
-    i0,
-    i1,
-    i2
-];
+var triangles = [i0, i1, i2];
 
 // function* triangulate() {
 for (var k = 0; k < ids.length; k++) {
     i = ids[k];
     if (i === i0 || i === i1 || i === i2) continue;
 
+    var x = coords[i];
+    var y = coords[i + 1];
+
     var e = hull;
     do {
-        if (area(coords[i], coords[i + 1],
-                 coords[e.i], coords[e.i + 1],
-                 coords[e.next.i], coords[e.next.i + 1]) < 0) break;
+        if (area(x, y, e.x, e.y, e.next.x, e.next.y) < 0) break;
         e = e.next;
     } while (e !== hull);
 
-    triangles.push(i);
-    triangles.push(e.i);
-    triangles.push(e.next.i);
-
-    e = insertNode(i, e);
-
-    // yield true;
+    addTriangle(triangles, i, e);
+    e = insertNode(coords, i, e);
 
     var q = e.next;
-    while (area(coords[i], coords[i + 1],
-                coords[q.i], coords[q.i + 1],
-                coords[q.next.i], coords[q.next.i + 1]) < 0) {
-
-        triangles.push(i);
-        triangles.push(q.i);
-        triangles.push(q.next.i);
-
+    while (area(x, y, q.x, q.y, q.next.x, q.next.y) < 0) {
+        addTriangle(triangles, i, q);
         hull = removeNode(q);
         q = q.next;
-
-        // yield true;
     }
 
-    q = e.prev.prev;
-    while (area(coords[i], coords[i + 1],
-                coords[q.i], coords[q.i + 1],
-                coords[q.next.i], coords[q.next.i + 1]) < 0) {
-
-        triangles.push(i);
-        triangles.push(q.i);
-        triangles.push(q.next.i);
-
-        hull = removeNode(q.next);
+    q = e.prev;
+    while (area(x, y, q.prev.x, q.prev.y, q.x, q.y) < 0) {
+        addTriangle(triangles, i, q.prev);
+        hull = removeNode(q);
         q = q.prev;
-
-        // yield true;
     }
-
-    // yield true;
+    // yield;
 }
-
-// yield false;
 // }
 console.timeEnd('triangulate');
+
+function addTriangle(triangles, i, e) {
+    triangles.push(e.i);
+    triangles.push(i);
+    triangles.push(e.next.i);
+}
 
 function dist(ax, ay, bx, by) {
     var dx = ax - bx;
@@ -229,9 +208,11 @@ function circumcenter(ax, ay, bx, by, cx, cy) {
 }
 
 // create a new node in a doubly linked list
-function insertNode(i, prev) {
+function insertNode(coords, i, prev) {
     var node = {
         i: i,
+        x: coords[i],
+        y: coords[i + 1],
         prev: null,
         next: null
     };
