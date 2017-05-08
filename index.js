@@ -1,132 +1,181 @@
 'use strict';
 
-// var points = require('../concaveman/tmp/test.json');
+// var points = require('../concaveman/tmp/test.json').slice(0, 65000);
+// var i;
 
 var points = [];
-for (var i = 0; i < 50; i++) {
+for (var i = 0; i < 65000; i++) {
     points.push([Math.random() * 800, Math.random() * 600]);
 }
-// var points = [[197.2438915845041,107.81312788615827],[322.1036604871113,166.9908316625814],[313.6562403018644,248.7626039180567],[289.81385723780323,38.475340891901766],[295.2642863075395,394.00767253413164],[402.81884257361185,330.00153530147463],[126.58954966249745,415.69554628436856],[33.34280336731297,450.0897765922154],[155.14277735518024,576.1370331856032],[621.7773361771856,53.83071491052118]];
 
 console.log(points.length + ' points');
 
-console.time('centroid');
+console.time('flatten');
+
 var minX = Infinity;
 var minY = Infinity;
 var maxX = -Infinity;
 var maxY = -Infinity;
+var coords = [];
+var ids = [];
 
-for (var i = 0; i < points.length; i++) {
+for (i = 0; i < points.length; i++) {
     var p = points[i];
-    minX = Math.min(minX, p[0]);
-    minY = Math.min(minY, p[1]);
-    maxX = Math.max(maxX, p[0]);
-    maxY = Math.max(maxY, p[1]);
+    var x = p[0];
+    var y = p[1];
+    ids.push(i * 2);
+    coords.push(x);
+    coords.push(y);
+    if (x < minX) minX = x;
+    if (y < minY) minY = y;
+    if (x > maxX) maxX = x;
+    if (y > maxY) maxY = y;
 }
 
 var cx = (minX + maxX) / 2;
 var cy = (minY + maxY) / 2;
-console.timeEnd('centroid');
+
+console.timeEnd('flatten');
+
 
 console.time('first');
-var minDist = Infinity;
-var first;
 
-for (i = 0; i < points.length; i++) {
-    var d = dist(cx, cy, points[i][0], points[i][1]);
+var minDist = Infinity;
+var i0;
+
+for (i = 0; i < coords.length; i += 2) {
+    var d = dist(cx, cy, coords[i], coords[i + 1]);
     if (d < minDist) {
-        first = points[i];
+        i0 = i;
         minDist = d;
     }
 }
+
 console.timeEnd('first');
 
 console.time('second');
-minDist = Infinity;
-var second;
 
-for (i = 0; i < points.length; i++) {
-    if (points[i] === first) continue;
-    var d = dist(first[0], first[1], points[i][0], points[i][1]);
+minDist = Infinity;
+var i1;
+
+for (i = 0; i < coords.length; i += 2) {
+    if (i === i0) continue;
+    var d = dist(coords[i0], coords[i0 + 1], coords[i], coords[i + 1]);
     if (d < minDist && d > 0) {
-        second = points[i];
+        i1 = i;
         minDist = d;
     }
 }
+
 console.timeEnd('second');
 
 console.time('third');
+
 var minRadius = Infinity;
-var third;
+var i2;
 
-for (i = 0; i < points.length; i++) {
-    if (points[i] === first || points[i] === second) continue;
+for (i = 0; i < coords.length; i += 2) {
+    if (i === i0 || i === i1) continue;
 
-    var r = circumradius(first, second, points[i]);
+    var r = circumradius(
+        coords[i0], coords[i0 + 1],
+        coords[i1], coords[i1 + 1],
+        coords[i], coords[i + 1]);
+
     if (r < minRadius) {
-        third = points[i];
+        i2 = i;
         minRadius = r;
     }
 }
+
+if (area(coords[i0], coords[i0 + 1],
+         coords[i1], coords[i1 + 1],
+         coords[i2], coords[i2 + 1]) < 0) {
+
+    var tmp = i1;
+    i1 = i2;
+    i2 = tmp;
+}
+
+var center = circumcenter(
+    coords[i0], coords[i0 + 1],
+    coords[i1], coords[i1 + 1],
+    coords[i2], coords[i2 + 1]);
+
 console.timeEnd('third');
 
-if (area(first, second, third) < 0) {
-    var tmp = second;
-    second = third;
-    third = tmp;
-}
-
-var center = circumcenter(first, second, third);
-var radius = Math.sqrt(circumradius(first, second, third));
-
 console.time('sort');
-quicksort(points, 0, points.length - 1, function (a, b) {
-    var d1 = dist(a[0], a[1], center[0], center[1]);
-    var d2 = dist(b[0], b[1], center[0], center[1]);
-    return d1 - d2;
-});
+quicksort(ids, coords, 0, ids.length - 1, center.x, center.y);
 console.timeEnd('sort');
 
-var hull = insertNode(first);
-hull = insertNode(second, hull);
-hull = insertNode(third, hull);
-
-var triangles = [[first, second, third]];
-
 console.time('triangulate');
-function* triangulate() {
-    for (i = 0; i < points.length; i++) {
-        var p = points[i];
-        if (p === first || p === second || p === third) continue;
 
-        var e = hull;
-        do {
-            if (area(p, e.p, e.next.p) < 0) break;
-            e = e.next;
-        } while (e !== hull);
+var hull = insertNode(i0);
+hull = insertNode(i1, hull);
+hull = insertNode(i2, hull);
 
-        triangles.push([p, e.p, e.next.p]);
-        e = insertNode(p, e);
+var triangles = [
+    i0,
+    i1,
+    i2
+];
 
-        var q = e.next;
-        while (area(p, q.p, q.next.p) < 0) {
-            triangles.push([p, q.p, q.next.p]);
-            hull = removeNode(q);
-            q = q.next;
-        }
+// function* triangulate() {
+for (var k = 0; k < ids.length; k++) {
+    i = ids[k];
+    if (i === i0 || i === i1 || i === i2) continue;
 
-        q = e.prev.prev;
-        while (area(p, q.p, q.next.p) < 0) {
-            triangles.push([p, q.p, q.next.p]);
-            hull = removeNode(q.next);
-            q = q.prev;
-        }
+    var e = hull;
+    do {
+        if (area(coords[i], coords[i + 1],
+                 coords[e.i], coords[e.i + 1],
+                 coords[e.next.i], coords[e.next.i + 1]) < 0) break;
+        e = e.next;
+    } while (e !== hull);
 
-        yield true;
+    triangles.push(i);
+    triangles.push(e.i);
+    triangles.push(e.next.i);
+
+    e = insertNode(i, e);
+
+    // yield true;
+
+    var q = e.next;
+    while (area(coords[i], coords[i + 1],
+                coords[q.i], coords[q.i + 1],
+                coords[q.next.i], coords[q.next.i + 1]) < 0) {
+
+        triangles.push(i);
+        triangles.push(q.i);
+        triangles.push(q.next.i);
+
+        hull = removeNode(q);
+        q = q.next;
+
+        // yield true;
     }
 
-    yield false;
+    q = e.prev.prev;
+    while (area(coords[i], coords[i + 1],
+                coords[q.i], coords[q.i + 1],
+                coords[q.next.i], coords[q.next.i + 1]) < 0) {
+
+        triangles.push(i);
+        triangles.push(q.i);
+        triangles.push(q.next.i);
+
+        hull = removeNode(q.next);
+        q = q.prev;
+
+        // yield true;
+    }
+
+    // yield true;
 }
+
+// yield false;
+// }
 console.timeEnd('triangulate');
 
 function dist(ax, ay, bx, by) {
@@ -135,11 +184,11 @@ function dist(ax, ay, bx, by) {
     return dx * dx + dy * dy;
 }
 
-function circumradius(a, b, c) {
-    var bx = b[0] - a[0];
-    var by = b[1] - a[1];
-    var cx = c[0] - a[0];
-    var cy = c[1] - a[1];
+function circumradius(ax, ay, bx, by, cx, cy) {
+    var bx = bx - ax;
+    var by = by - ay;
+    var cx = cx - ax;
+    var cy = cy - ay;
 
     var bl = bx * bx + by * by;
     var cl = cx * cx + cy * cy;
@@ -155,15 +204,15 @@ function circumradius(a, b, c) {
     return x * x + y * y;
 }
 
-function area(p, q, r) {
-    return (q[1] - p[1]) * (r[0] - q[0]) - (q[0] - p[0]) * (r[1] - q[1]);
+function area(px, py, qx, qy, rx, ry) {
+    return (qy - py) * (rx - qx) - (qx - px) * (ry - qy);
 }
 
-function circumcenter(a, b, c) {
-    var bx = b[0] - a[0];
-    var by = b[1] - a[1];
-    var cx = c[0] - a[0];
-    var cy = c[1] - a[1];
+function circumcenter(ax, ay, bx, by, cx, cy) {
+    var bx = bx - ax;
+    var by = by - ay;
+    var cx = cx - ax;
+    var cy = cy - ay;
 
     var bl = bx * bx + by * by;
     var cl = cx * cx + cy * cy;
@@ -173,13 +222,16 @@ function circumcenter(a, b, c) {
     var x = (cy * bl - by * cl) * 0.5 / d;
     var y = (bx * cl - cx * bl) * 0.5 / d;
 
-    return [a[0] + x, a[1] + y];
+    return {
+        x: ax + x,
+        y: ay + y
+    };
 }
 
 // create a new node in a doubly linked list
-function insertNode(p, prev) {
+function insertNode(i, prev) {
     var node = {
-        p: p,
+        i: i,
         prev: null,
         next: null
     };
@@ -203,43 +255,50 @@ function removeNode(node) {
     return node.prev;
 }
 
-function quicksort(arr, left, right, compare) {
+
+function quicksort(ids, coords, left, right, cx, cy) {
     var i, j, temp;
 
     if (right - left <= 20) {
         for (i = left + 1; i <= right; i++) {
-            temp = arr[i];
+            temp = ids[i];
             j = i - 1;
-            while (j >= left && compare(arr[j], temp) > 0) arr[j + 1] = arr[j--];
-            arr[j + 1] = temp;
+            while (j >= left && compare(coords, ids[j], temp, cx, cy) > 0) ids[j + 1] = ids[j--];
+            ids[j + 1] = temp;
         }
     } else {
         var median = (left + right) >> 1;
         i = left + 1;
         j = right;
-        swap(arr, median, i);
-        if (compare(arr[left], arr[right]) > 0) swap(arr, left, right);
-        if (compare(arr[i], arr[right]) > 0) swap(arr, i, right);
-        if (compare(arr[left], arr[i]) > 0) swap(arr, left, i);
+        swap(ids, median, i);
+        if (compare(coords, ids[left], ids[right], cx, cy) > 0) swap(ids, left, right);
+        if (compare(coords, ids[i], ids[right], cx, cy) > 0) swap(ids, i, right);
+        if (compare(coords, ids[left], ids[i], cx, cy) > 0) swap(ids, left, i);
 
-        temp = arr[i];
+        temp = ids[i];
         while (true) {
-            do i++; while (compare(arr[i], temp) < 0);
-            do j--; while (compare(arr[j], temp) > 0);
+            do i++; while (compare(coords, ids[i], temp, cx, cy) < 0);
+            do j--; while (compare(coords, ids[j], temp, cx, cy) > 0);
             if (j < i) break;
-            swap(arr, i, j);
+            swap(ids, i, j);
         }
-        arr[left + 1] = arr[j];
-        arr[j] = temp;
+        ids[left + 1] = ids[j];
+        ids[j] = temp;
 
         if (right - i + 1 >= j - left) {
-            quicksort(arr, i, right, compare);
-            quicksort(arr, left, j - 1, compare);
+            quicksort(ids, coords, i, right, cx, cy);
+            quicksort(ids, coords, left, j - 1, cx, cy);
         } else {
-            quicksort(arr, left, j - 1, compare);
-            quicksort(arr, i, right, compare);
+            quicksort(ids, coords, left, j - 1, cx, cy);
+            quicksort(ids, coords, i, right, cx, cy);
         }
     }
+}
+
+function compare(coords, i, j, cx, cy) {
+    var d1 = dist(coords[i], coords[i + 1], cx, cy);
+    var d2 = dist(coords[j], coords[j + 1], cx, cy);
+    return d1 - d2;
 }
 
 function swap(arr, i, j) {

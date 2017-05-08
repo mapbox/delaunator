@@ -16,15 +16,18 @@ var ctx = canvas.getContext('2d');
 
 ctx.scale(2, 2);
 
+ctx.lineJoin = 'round';
+ctx.lineCap = 'round';
+
 function draw() {
     ctx.clearRect(0, 0, 800, 600);
 
     ctx.beginPath();
-    for (var i = 0; i < triangles.length; i++) {
-        var t = triangles[i];
-        ctx.moveTo(t[0][0], t[0][1]);
-        ctx.lineTo(t[1][0], t[1][1]);
-        ctx.lineTo(t[2][0], t[2][1]);
+    for (var i = 0; i < triangles.length; i += 3) {
+        ctx.moveTo(coords[triangles[i + 0]], coords[triangles[i + 0] + 1]);
+        ctx.lineTo(coords[triangles[i + 1]], coords[triangles[i + 1] + 1]);
+        ctx.lineTo(coords[triangles[i + 2]], coords[triangles[i + 2] + 1]);
+        ctx.closePath();
     }
     ctx.strokeStyle = 'green';
     ctx.lineWidth = 1;
@@ -33,10 +36,10 @@ function draw() {
     ctx.fill();
 
     ctx.beginPath();
-    ctx.moveTo(hull.p[0], hull.p[1]);
+    ctx.moveTo(coords[hull.i], coords[hull.i + 1]);
     var e = hull;
     do {
-        ctx.lineTo(e.next.p[0], e.next.p[1]);
+        ctx.lineTo(coords[e.next.i], coords[e.next.i + 1]);
         e = e.next;
     } while (e !== hull);
     ctx.lineWidth = 2;
@@ -53,8 +56,8 @@ function draw() {
 
 </script>
 <script src="index.js"></script>
-
 <script>
+
 var gen = triangulate();
 function frame() {
     if (gen.next().value) {
@@ -66,6 +69,7 @@ draw();
 
 document.onkeypress = frame;
 // requestAnimationFrame(frame);
+
 </script>
 
 </body>
