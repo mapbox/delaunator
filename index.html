@@ -14,19 +14,24 @@
 var canvas = document.getElementById('canvas');
 var ctx = canvas.getContext('2d');
 
+var w = canvas.width / 2;
+var h = canvas.height / 2;
+
 ctx.scale(2, 2);
+
+var m = w / 350;
 
 ctx.lineJoin = 'round';
 ctx.lineCap = 'round';
 
 function draw() {
-    ctx.clearRect(0, 0, 800, 600);
+    ctx.clearRect(0, 0, w, h);
 
     ctx.beginPath();
     for (var i = 0; i < triangles.length; i += 3) {
-        ctx.moveTo(coords[triangles[i + 0]], coords[triangles[i + 0] + 1]);
-        ctx.lineTo(coords[triangles[i + 1]], coords[triangles[i + 1] + 1]);
-        ctx.lineTo(coords[triangles[i + 2]], coords[triangles[i + 2] + 1]);
+        ctx.moveTo(m * coords[triangles[i + 0]], m * coords[triangles[i + 0] + 1]);
+        ctx.lineTo(m * coords[triangles[i + 1]], m * coords[triangles[i + 1] + 1]);
+        ctx.lineTo(m * coords[triangles[i + 2]], m * coords[triangles[i + 2] + 1]);
         ctx.closePath();
     }
     ctx.strokeStyle = 'green';
@@ -36,20 +41,20 @@ function draw() {
     ctx.fill();
 
     ctx.beginPath();
-    ctx.moveTo(coords[hull.i], coords[hull.i + 1]);
+    ctx.moveTo(m * coords[hull.i], m * coords[hull.i + 1]);
     var e = hull;
     do {
-        ctx.lineTo(coords[e.next.i], coords[e.next.i + 1]);
+        ctx.lineTo(m * coords[e.next.i], m * coords[e.next.i + 1]);
         e = e.next;
     } while (e !== hull);
-    ctx.lineWidth = 2;
+    ctx.lineWidth = 1;
     ctx.strokeStyle = 'red';
     ctx.stroke();
 
     ctx.fillStyle = 'blue';
     ctx.beginPath();
-    for (var i = 0; i < points.length; i++) {
-        ctx.rect(points[i][0] - 1, points[i][1] - 1, 2, 2);
+    for (var i = 0; i < coords.length; i += 2) {
+        ctx.rect(m * coords[i] - 1, m * coords[i + 1] - 1, 2, 2);
     }
     ctx.fill();
 }
@@ -63,12 +68,12 @@ var gen = triangulate();
 function frame() {
     if (gen.next().done) return;
     draw();
-    // requestAnimationFrame(frame);
+    requestAnimationFrame(frame);
 }
 draw();
 
-document.onkeypress = frame;
-// requestAnimationFrame(frame);
+// document.onkeypress = frame;
+requestAnimationFrame(frame);
 
 </script>
 
