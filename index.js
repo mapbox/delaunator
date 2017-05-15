@@ -168,7 +168,11 @@ function Delaunay(points) {
 Delaunay.prototype = {
 
     _legalize: function (a) {
-        var b = this.adjacent[a];
+        var triangles = this.triangles;
+        var coords = this.coords;
+        var adjacent = this.adjacent;
+
+        var b = adjacent[a];
 
         var a0 = a - a % 3;
         var b0 = b - b % 3;
@@ -178,25 +182,24 @@ Delaunay.prototype = {
         var br = b0 + (b + 1) % 3;
         var bl = b0 + (b + 2) % 3;
 
-        var p0 = this.triangles[ar];
-        var pr = this.triangles[a];
-        var pl = this.triangles[al];
-        var p = this.triangles[bl];
+        var p0 = triangles[ar];
+        var pr = triangles[a];
+        var pl = triangles[al];
+        var p = triangles[bl];
 
         var illegal = inCircle(
-            this.coords[p0], this.coords[p0 + 1],
-            this.coords[pr], this.coords[pr + 1],
-            this.coords[pl], this.coords[pl + 1],
-            this.coords[p], this.coords[p + 1]);
+            coords[p0], coords[p0 + 1],
+            coords[pr], coords[pr + 1],
+            coords[pl], coords[pl + 1],
+            coords[p], coords[p + 1]);
 
         if (illegal) {
-            this.triangles[a] = p;
-            this.triangles[b] = p0;
+            triangles[a] = p;
+            triangles[b] = p0;
 
-            var aar = this.adjacent[ar];
-            this._link(a, this.adjacent[bl]);
+            this._link(a, adjacent[bl]);
+            this._link(b, adjacent[ar]);
             this._link(ar, bl);
-            this._link(b, aar);
 
             this._legalize(a);
             return this._legalize(br);
@@ -223,6 +226,10 @@ function dist(ax, ay, bx, by) {
     var dx = ax - bx;
     var dy = ay - by;
     return dx * dx + dy * dy;
+}
+
+function area(px, py, qx, qy, rx, ry) {
+    return (qy - py) * (rx - qx) - (qx - px) * (ry - qy);
 }
 
 function inCircle(ax, ay, bx, by, cx, cy, px, py) {
@@ -262,10 +269,6 @@ function circumradius(ax, ay, bx, by, cx, cy) {
     var y = (bx * cl - cx * bl) * 0.5 / d;
 
     return x * x + y * y;
-}
-
-function area(px, py, qx, qy, rx, ry) {
-    return (qy - py) * (rx - qx) - (qx - px) * (ry - qy);
 }
 
 function circumcenter(ax, ay, bx, by, cx, cy) {
