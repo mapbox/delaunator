@@ -31,6 +31,7 @@ function Delaunay(points) {
     var minDist = Infinity;
     var i0, i1, i2;
 
+    // pick a seed point close to the centroid
     for (i = 0; i < coords.length; i += 2) {
         var d = dist(cx, cy, coords[i], coords[i + 1]);
         if (d < minDist) {
@@ -41,6 +42,7 @@ function Delaunay(points) {
 
     minDist = Infinity;
 
+    // find the point closest to the seed
     for (i = 0; i < coords.length; i += 2) {
         if (i === i0) continue;
         d = dist(coords[i0], coords[i0 + 1], coords[i], coords[i + 1]);
@@ -52,6 +54,7 @@ function Delaunay(points) {
 
     var minRadius = Infinity;
 
+    // find the third point which forms the smallest circumcircle with the first two
     for (i = 0; i < coords.length; i += 2) {
         if (i === i0 || i === i1) continue;
 
@@ -66,6 +69,7 @@ function Delaunay(points) {
         }
     }
 
+    // swap the order of the seed points for counter-clockwise orientation
     if (area(coords[i0], coords[i0 + 1],
              coords[i1], coords[i1 + 1],
              coords[i2], coords[i2 + 1]) < 0) {
@@ -80,8 +84,10 @@ function Delaunay(points) {
         coords[i1], coords[i1 + 1],
         coords[i2], coords[i2 + 1]);
 
+    // sort the points by distance from the seed triangle circumcenter
     quicksort(ids, coords, 0, ids.length - 1, center.x, center.y);
 
+    // initialize a circular doubly-linked list that will hold an advancing convex hull
     this.hull = insertNode(coords, i0);
     this.hull.t = 0;
     this.hull = insertNode(coords, i1, this.hull);
@@ -102,34 +108,33 @@ function Delaunay(points) {
 
         // skip duplicate points
         if (x === xp && y === yp) continue;
-
         xp = x;
         yp = y;
 
+        // find a visible edge on the convex hull
         var e = this.hull;
-        var walkBack = false;
-        do {
-            if (area(x, y, e.x, e.y, e.next.x, e.next.y) < 0) {
-                walkBack = true;
-                break;
-            }
+        while (area(x, y, e.x, e.y, e.next.x, e.next.y) >= 0) {
             e = e.next;
-        } while (e !== this.hull);
+        }
+        var walkBack = e === this.hull;
 
+        // add the first triangle from the point
         var t = this._addTriangle(i, e);
-
         adjacent[t] = -1;
         adjacent[t + 1] = -1;
         this._link(t + 2, e.t);
 
-        e.t = t;
+        e.t = t; // keep track of boundary triangles on the hull
         e = insertNode(coords, i, e);
+
+        // recursively flip triangles from the point until they satisfy the Delaunay condition
         e.t = this._legalize(t + 2);
 
+        // walk forward through the hull, adding more triangles and flipping recursively
         var q = e.next;
         while (area(x, y, q.x, q.y, q.next.x, q.next.y) < 0) {
-            t = this._addTriangle(i, q);
 
+            t = this._addTriangle(i, q);
             this._link(t, q.prev.t);
             adjacent[t + 1] = -1;
             this._link(t + 2, q.t);
@@ -142,10 +147,11 @@ function Delaunay(points) {
 
         if (!walkBack) continue;
 
+        // walk backward from the other side, adding more triangles and flipping
         q = e.prev;
         while (area(x, y, q.prev.x, q.prev.y, q.x, q.y) < 0) {
-            t = this._addTriangle(i, q.prev);
 
+            t = this._addTriangle(i, q.prev);
             adjacent[t] = -1;
             this._link(t + 1, q.t);
             this._link(t + 2, q.prev.t);
