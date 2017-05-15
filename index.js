@@ -29,7 +29,7 @@ function Delaunay(points) {
     var cy = (minY + maxY) / 2;
 
     var minDist = Infinity;
-    var i0;
+    var i0, i1, i2;
 
     for (i = 0; i < coords.length; i += 2) {
         var d = dist(cx, cy, coords[i], coords[i + 1]);
@@ -40,7 +40,6 @@ function Delaunay(points) {
     }
 
     minDist = Infinity;
-    var i1;
 
     for (i = 0; i < coords.length; i += 2) {
         if (i === i0) continue;
@@ -52,7 +51,6 @@ function Delaunay(points) {
     }
 
     var minRadius = Infinity;
-    var i2;
 
     for (i = 0; i < coords.length; i += 2) {
         if (i === i0 || i === i1) continue;
@@ -91,7 +89,7 @@ function Delaunay(points) {
     this.hull = insertNode(coords, i2, this.hull);
     this.hull.t = 2;
 
-    var triangles = this.triangles = [i0, i1, i2];
+    this.triangles = [i0, i1, i2];
     var adjacent = this.adjacent = [-1, -1, -1];
 
     var xp, yp;
@@ -105,6 +103,9 @@ function Delaunay(points) {
         // skip duplicate points
         if (x === xp && y === yp) continue;
 
+        xp = x;
+        yp = y;
+
         var e = this.hull;
         var walkBack = false;
         do {
@@ -115,7 +116,7 @@ function Delaunay(points) {
             e = e.next;
         } while (e !== this.hull);
 
-        var t = addTriangle(triangles, i, e);
+        var t = this._addTriangle(i, e);
 
         adjacent[t] = -1;
         adjacent[t + 1] = -1;
@@ -127,7 +128,7 @@ function Delaunay(points) {
 
         var q = e.next;
         while (area(x, y, q.x, q.y, q.next.x, q.next.y) < 0) {
-            t = addTriangle(triangles, i, q);
+            t = this._addTriangle(i, q);
 
             this._link(t, q.prev.t);
             adjacent[t + 1] = -1;
@@ -143,7 +144,7 @@ function Delaunay(points) {
 
         q = e.prev;
         while (area(x, y, q.prev.x, q.prev.y, q.x, q.y) < 0) {
-            t = addTriangle(triangles, i, q.prev);
+            t = this._addTriangle(i, q.prev);
 
             adjacent[t] = -1;
             this._link(t + 1, q.t);
@@ -155,62 +156,62 @@ function Delaunay(points) {
             this.hull = removeNode(q);
             q = q.prev;
         }
-
-        xp = x;
-        yp = y;
     }
 }
 
-Delaunay.prototype._legalize = function (a) {
-    var b = this.adjacent[a];
+Delaunay.prototype = {
 
-    var a0 = a - a % 3;
-    var b0 = b - b % 3;
+    _legalize: function (a) {
+        var b = this.adjacent[a];
 
-    var al = a0 + (a + 1) % 3;
-    var ar = a0 + (a + 2) % 3;
-    var br = b0 + (b + 1) % 3;
-    var bl = b0 + (b + 2) % 3;
+        var a0 = a - a % 3;
+        var b0 = b - b % 3;
 
-    var p0 = this.triangles[ar];
-    var pr = this.triangles[a];
-    var pl = this.triangles[al];
-    var p = this.triangles[bl];
+        var al = a0 + (a + 1) % 3;
+        var ar = a0 + (a + 2) % 3;
+        var br = b0 + (b + 1) % 3;
+        var bl = b0 + (b + 2) % 3;
 
-    var illegal = inCircle(
-        this.coords[p0], this.coords[p0 + 1],
-        this.coords[pr], this.coords[pr + 1],
-        this.coords[pl], this.coords[pl + 1],
-        this.coords[p], this.coords[p + 1]);
+        var p0 = this.triangles[ar];
+        var pr = this.triangles[a];
+        var pl = this.triangles[al];
+        var p = this.triangles[bl];
 
-    if (illegal) {
-        this.triangles[a] = p;
-        this.triangles[b] = p0;
+        var illegal = inCircle(
+            this.coords[p0], this.coords[p0 + 1],
+            this.coords[pr], this.coords[pr + 1],
+            this.coords[pl], this.coords[pl + 1],
+            this.coords[p], this.coords[p + 1]);
 
-        var aar = this.adjacent[ar];
-        this._link(a, this.adjacent[bl]);
-        this._link(ar, bl);
-        this._link(b, aar);
+        if (illegal) {
+            this.triangles[a] = p;
+            this.triangles[b] = p0;
 
-        this._legalize(a);
-        return this._legalize(br);
+            var aar = this.adjacent[ar];
+            this._link(a, this.adjacent[bl]);
+            this._link(ar, bl);
+            this._link(b, aar);
+
+            this._legalize(a);
+            return this._legalize(br);
+        }
+
+        return ar;
+    },
+
+    _link: function (a, b) {
+        this.adjacent[a] = b;
+        this.adjacent[b] = a;
+    },
+
+    _addTriangle(i, e) {
+        var t = this.triangles.length;
+        this.triangles[t] = e.i;
+        this.triangles[t + 1] = i;
+        this.triangles[t + 2] = e.next.i;
+        return t;
     }
-
-    return ar;
 };
-
-Delaunay.prototype._link = function (a, b) {
-    this.adjacent[a] = b;
-    this.adjacent[b] = a;
-};
-
-function addTriangle(triangles, i, e) {
-    var t = triangles.length;
-    triangles[t] = e.i;
-    triangles[t + 1] = i;
-    triangles[t + 2] = e.next.i;
-    return t;
-}
 
 function dist(ax, ay, bx, by) {
     var dx = ax - bx;
