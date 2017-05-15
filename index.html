@@ -23,7 +23,7 @@ function draw() {
     ctx.clearRect(0, 0, 800, 600);
 
     ctx.beginPath();
-    for (var i = 0; i < triangles.length; i += 6) {
+    for (var i = 0; i < triangles.length; i += 3) {
         ctx.moveTo(coords[triangles[i + 0]], coords[triangles[i + 0] + 1]);
         ctx.lineTo(coords[triangles[i + 1]], coords[triangles[i + 1] + 1]);
         ctx.lineTo(coords[triangles[i + 2]], coords[triangles[i + 2] + 1]);

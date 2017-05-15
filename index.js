@@ -1,10 +1,10 @@
 'use strict';
 
-// var points = require('../concaveman/tmp/test.json');
-// var i;
+var points = require('../concaveman/tmp/test.json');
+var i;
 
 var points = [];
-for (var i = 0; i < 10; i++) {
+for (var i = 0; i < 65000; i++) {
     points.push([Math.random() * 800, Math.random() * 600]);
 }
 
@@ -113,15 +113,16 @@ console.timeEnd('sort');
 console.time('triangulate');
 
 var hull = insertNode(coords, i0);
-hull.t = 3;
+hull.t = 0;
 hull = insertNode(coords, i1, hull);
-hull.t = 4;
+hull.t = 1;
 hull = insertNode(coords, i2, hull);
-hull.t = 5;
+hull.t = 2;
 
-var triangles = [i0, i1, i2, -1, -1, -1];
+var triangles = [i0, i1, i2];
+var adjacent = [-1, -1, -1];
 
-function* triangulate() {
+// function* triangulate() {
 for (var k = 0; k < ids.length; k++) {
     i = ids[k];
     if (i === i0 || i === i1 || i === i2) continue;
@@ -141,24 +142,27 @@ for (var k = 0; k < ids.length; k++) {
 
     var t = addTriangle(triangles, i, e);
 
-    triangles[t + 5] = e.t;
-    triangles[e.t] = t + 5;
-    e.t = t + 3;
+    adjacent[t] = -1;
+    adjacent[t + 1] = -1;
+    adjacent[t + 2] = e.t;
+    adjacent[e.t] = t + 2;
+    e.t = t;
     e = insertNode(coords, i, e);
-    e.t = t + 4;
-    yield;
+    e.t = t + 1;
+    // yield;
 
     var q = e.next;
     while (area(x, y, q.x, q.y, q.next.x, q.next.y) < 0) {
         t = addTriangle(triangles, i, q);
-        triangles[t + 3] = q.prev.t;
-        triangles[q.prev.t] = t + 3;
-        triangles[t + 5] = q.t;
-        triangles[q.t] = t + 5;
-        q.prev.t = t + 4;
+        adjacent[t] = q.prev.t;
+        adjacent[q.prev.t] = t;
+        adjacent[t + 1] = -1;
+        adjacent[t + 2] = q.t;
+        adjacent[q.t] = t + 2;
+        q.prev.t = t + 1;
         hull = removeNode(q);
         q = q.next;
-        yield;
+        // yield;
     }
 
     if (!walkBack) continue;
@@ -166,17 +170,18 @@ for (var k = 0; k < ids.length; k++) {
     q = e.prev;
     while (area(x, y, q.prev.x, q.prev.y, q.x, q.y) < 0) {
         t = addTriangle(triangles, i, q.prev);
-        triangles[t + 4] = q.t;
-        triangles[q.t] = t + 4;
-        triangles[t + 5] = q.prev.t;
-        triangles[q.prev.t] = t + 5;
-        q.prev.t = t + 3;
+        adjacent[t] = -1;
+        adjacent[t + 1] = q.t;
+        adjacent[q.t] = t + 1;
+        adjacent[t + 2] = q.prev.t;
+        adjacent[q.prev.t] = t + 2;
+        q.prev.t = t;
         hull = removeNode(q);
         q = q.prev;
-        yield;
+        // yield;
     }
 }
-}
+// }
 console.timeEnd('triangulate');
 
 var e = hull;
@@ -195,9 +200,6 @@ function addTriangle(triangles, i, e) {
     triangles[t] = e.i;
     triangles[t + 1] = i;
     triangles[t + 2] = e.next.i;
-    triangles[t + 3] = -1;
-    triangles[t + 4] = -1;
-    triangles[t + 5] = -1;
     return t;
 }
 
