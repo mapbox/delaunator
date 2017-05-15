@@ -44,7 +44,7 @@ function Delaunay(points) {
 
     for (i = 0; i < coords.length; i += 2) {
         if (i === i0) continue;
-        var d = dist(coords[i0], coords[i0 + 1], coords[i], coords[i + 1]);
+        d = dist(coords[i0], coords[i0 + 1], coords[i], coords[i + 1]);
         if (d < minDist && d > 0) {
             i1 = i;
             minDist = d;
@@ -99,8 +99,8 @@ function Delaunay(points) {
         i = ids[k];
         if (i === i0 || i === i1 || i === i2) continue;
 
-        var x = coords[i];
-        var y = coords[i + 1];
+        x = coords[i];
+        y = coords[i + 1];
 
         // skip duplicate points
         if (x === xp && y === yp) continue;
@@ -188,21 +188,21 @@ Delaunay.prototype._legalize = function (a) {
         this.triangles[b] = p0;
 
         var aar = this.adjacent[ar];
-        this._link( a, this.adjacent[bl]);
-        this._link( ar, bl);
-        this._link( b, aar);
+        this._link(a, this.adjacent[bl]);
+        this._link(ar, bl);
+        this._link(b, aar);
 
         this._legalize(a);
         return this._legalize(br);
     }
 
     return ar;
-}
+};
 
 Delaunay.prototype._link = function (a, b) {
     this.adjacent[a] = b;
     this.adjacent[b] = a;
-}
+};
 
 function addTriangle(triangles, i, e) {
     var t = triangles.length;
@@ -238,10 +238,10 @@ function inCircle(ax, ay, bx, by, cx, cy, px, py) {
 }
 
 function circumradius(ax, ay, bx, by, cx, cy) {
-    var bx = bx - ax;
-    var by = by - ay;
-    var cx = cx - ax;
-    var cy = cy - ay;
+    bx -= ax;
+    by -= ay;
+    cx -= ax;
+    cy -= ay;
 
     var bl = bx * bx + by * by;
     var cl = cx * cx + cy * cy;
@@ -262,10 +262,10 @@ function area(px, py, qx, qy, rx, ry) {
 }
 
 function circumcenter(ax, ay, bx, by, cx, cy) {
-    var bx = bx - ax;
-    var by = by - ay;
-    var cx = cx - ax;
-    var cy = cy - ay;
+    bx -= ax;
+    by -= ay;
+    cx -= ax;
+    cy -= ay;
 
     var bl = bx * bx + by * by;
     var cl = cx * cx + cy * cy;

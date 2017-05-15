@@ -1,0 +1,20 @@
+{
+  "name": "delaunator",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "dependencies": {},
+  "devDependencies": {
+    "eslint": "^3.19.0",
+    "eslint-config-mourner": "^2.0.1"
+  },
+  "scripts": {
+    "test": "eslint index.js"
+  },
+  "eslintConfig": {
+    "extends": "mourner"
+  },
+  "keywords": [],
+  "author": "Vladimir Agafonkin",
+  "license": "ISC"
+}
