@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Test</title>
+    <title>Delaunator, the fastest JavaScript library for Delaunay triangulation of 2D points</title>
     <style>
     body { margin: 0; text-align: center; font-family: sans-serif; }
     canvas { border: 1px solid #ccc; }
@@ -10,7 +10,7 @@
 </head>
 <body>
 
-<h2><a href="https://github.com/mapbox/delaunator">mapbox/delaunator</a> demo</h2>
+<h2><a href="https://github.com/mapbox/delaunator">delaunator</a> demo</h2>
 <canvas id="canvas"></canvas>
 
 <script>var module = {};</script>
@@ -105,7 +105,7 @@ function draw() {
         ctx.closePath();
     }
     ctx.strokeStyle = 'rgba(0,200,0,1)';
-    ctx.lineWidth = 1;
+    ctx.lineWidth = 0.5;
     ctx.stroke();
     // ctx.fillStyle = 'rgba(255,255,0,0.1)';
     // ctx.fill();
@@ -117,14 +117,14 @@ function draw() {
         ctx.lineTo(getX(e.next.i), getY(e.next.i));
         e = e.next;
     } while (e !== hull);
-    ctx.lineWidth = 2;
+    ctx.lineWidth = 1;
     ctx.strokeStyle = 'red';
     ctx.stroke();
 
     ctx.fillStyle = 'black';
     ctx.beginPath();
     for (var i = 0; i < points.length; i++) {
-        ctx.rect(getX(2 * i) - 1, getY(2 * i) - 1, 2, 2);
+        ctx.rect(getX(2 * i) - 1.5, getY(2 * i) - 1.5, 3, 3);
     }
     ctx.fill();
 }
