@@ -30,12 +30,3 @@ Duplicate points are skipped.
 #### delaunay.triangles
 
 A flat array of triangle indices (each group of three numbers forms a triangle).
-
-### To do
-
-- [x] Implement the algorithm.
-- [x] Add a simple demo.
-- [x] Add proper tests.
-- [x] Clean up and document the API.
-- [ ] Release the first version to NPM.
-- [ ] Add a benchmark against similar libraries.
