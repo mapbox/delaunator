@@ -16,7 +16,7 @@ function Delaunay(points) {
         var p = points[i];
         var x = p[0];
         var y = p[1];
-        ids.push(i * 2);
+        ids.push(i);
         coords.push(x);
         coords.push(y);
         if (x < minX) minX = x;
@@ -32,8 +32,8 @@ function Delaunay(points) {
     var i0, i1, i2;
 
     // pick a seed point close to the centroid
-    for (i = 0; i < coords.length; i += 2) {
-        var d = dist(cx, cy, coords[i], coords[i + 1]);
+    for (i = 0; i < points.length; i++) {
+        var d = dist(cx, cy, coords[2 * i], coords[2 * i + 1]);
         if (d < minDist) {
             i0 = i;
             minDist = d;
@@ -43,9 +43,9 @@ function Delaunay(points) {
     minDist = Infinity;
 
     // find the point closest to the seed
-    for (i = 0; i < coords.length; i += 2) {
+    for (i = 0; i < points.length; i++) {
         if (i === i0) continue;
-        d = dist(coords[i0], coords[i0 + 1], coords[i], coords[i + 1]);
+        d = dist(coords[2 * i0], coords[2 * i0 + 1], coords[2 * i], coords[2 * i + 1]);
         if (d < minDist && d > 0) {
             i1 = i;
             minDist = d;
@@ -55,13 +55,13 @@ function Delaunay(points) {
     var minRadius = Infinity;
 
     // find the third point which forms the smallest circumcircle with the first two
-    for (i = 0; i < coords.length; i += 2) {
+    for (i = 0; i < points.length; i++) {
         if (i === i0 || i === i1) continue;
 
         var r = circumradius(
-            coords[i0], coords[i0 + 1],
-            coords[i1], coords[i1 + 1],
-            coords[i], coords[i + 1]);
+            coords[2 * i0], coords[2 * i0 + 1],
+            coords[2 * i1], coords[2 * i1 + 1],
+            coords[2 * i], coords[2 * i + 1]);
 
         if (r < minRadius) {
             i2 = i;
@@ -74,21 +74,21 @@ function Delaunay(points) {
     }
 
     // swap the order of the seed points for counter-clockwise orientation
-    if (area(coords[i0], coords[i0 + 1],
-             coords[i1], coords[i1 + 1],
-             coords[i2], coords[i2 + 1]) < 0) {
+    if (area(coords[2 * i0], coords[2 * i0 + 1],
+             coords[2 * i1], coords[2 * i1 + 1],
+             coords[2 * i2], coords[2 * i2 + 1]) < 0) {
 
         var tmp = i1;
         i1 = i2;
         i2 = tmp;
     }
 
-    var i0x = coords[i0];
-    var i0y = coords[i0 + 1];
-    var i1x = coords[i1];
-    var i1y = coords[i1 + 1];
-    var i2x = coords[i2];
-    var i2y = coords[i2 + 1];
+    var i0x = coords[2 * i0];
+    var i0y = coords[2 * i0 + 1];
+    var i1x = coords[2 * i1];
+    var i1y = coords[2 * i1 + 1];
+    var i2x = coords[2 * i2];
+    var i2y = coords[2 * i2 + 1];
 
     var center = circumcenter(i0x, i0y, i1x, i1y, i2x, i2y);
 
@@ -109,8 +109,8 @@ function Delaunay(points) {
     var xp, yp;
     for (var k = 0; k < ids.length; k++) {
         i = ids[k];
-        x = coords[i];
-        y = coords[i + 1];
+        x = coords[2 * i];
+        y = coords[2 * i + 1];
 
         // skip duplicate points
         if (x === xp && y === yp) continue;
@@ -202,10 +202,10 @@ Delaunay.prototype = {
         var p1 = triangles[bl];
 
         var illegal = inCircle(
-            coords[p0], coords[p0 + 1],
-            coords[pr], coords[pr + 1],
-            coords[pl], coords[pl + 1],
-            coords[p1], coords[p1 + 1]);
+            coords[2 * p0], coords[2 * p0 + 1],
+            coords[2 * pr], coords[2 * pr + 1],
+            coords[2 * pl], coords[2 * pl + 1],
+            coords[2 * p1], coords[2 * p1 + 1]);
 
         if (illegal) {
             triangles[a] = p1;
@@ -309,8 +309,8 @@ function circumcenter(ax, ay, bx, by, cx, cy) {
 function insertNode(coords, i, prev) {
     var node = {
         i: i,
-        x: coords[i],
-        y: coords[i + 1],
+        x: coords[2 * i],
+        y: coords[2 * i + 1],
         t: 0,
         prev: null,
         next: null
@@ -375,9 +375,9 @@ function quicksort(ids, coords, left, right, cx, cy) {
 }
 
 function compare(coords, i, j, cx, cy) {
-    var d1 = dist(coords[i], coords[i + 1], cx, cy);
-    var d2 = dist(coords[j], coords[j + 1], cx, cy);
-    return (d1 - d2) || (coords[i] - coords[j]) || (coords[i + 1] - coords[j + 1]);
+    var d1 = dist(coords[2 * i], coords[2 * i + 1], cx, cy);
+    var d2 = dist(coords[2 * j], coords[2 * j + 1], cx, cy);
+    return (d1 - d2) || (coords[2 * i] - coords[2 * j]) || (coords[2 * i + 1] - coords[2 * j + 1]);
 }
 
 function swap(arr, i, j) {

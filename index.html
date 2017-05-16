@@ -4,7 +4,7 @@
     <title>Delaunator, the fastest JavaScript library for Delaunay triangulation of 2D points</title>
     <style>
     body { margin: 0; text-align: center; font-family: sans-serif; }
-    canvas { border: 1px solid #ccc; }
+    canvas { border: 1px solid #ccc; position: relative; }
     a, a:visited { color: #09f }
     </style>
 </head>
@@ -73,10 +73,10 @@ canvas.onmousemove = function (e) {
 }
 
 function getX(i) {
-    return padding + ratio * (delaunay.coords[i] - minX);
+    return padding + ratio * (points[i][0] - minX);
 }
 function getY(i) {
-    return padding + ratio * (delaunay.coords[i + 1] - minY);
+    return padding + ratio * (points[i][1] - minY);
 }
 
 function frame() {
@@ -124,7 +124,7 @@ function draw() {
     ctx.fillStyle = 'black';
     ctx.beginPath();
     for (var i = 0; i < points.length; i++) {
-        ctx.rect(getX(2 * i) - 1.5, getY(2 * i) - 1.5, 3, 3);
+        ctx.rect(getX(i) - 1.5, getY(i) - 1.5, 3, 3);
     }
     ctx.fill();
 }
