@@ -69,6 +69,10 @@ function Delaunay(points) {
         }
     }
 
+    if (minRadius === Infinity) {
+        throw new Error('No Delaunay triangulation exists for this input.');
+    }
+
     // swap the order of the seed points for counter-clockwise orientation
     if (area(coords[i0], coords[i0 + 1],
              coords[i1], coords[i1 + 1],
@@ -79,10 +83,14 @@ function Delaunay(points) {
         i2 = tmp;
     }
 
-    var center = circumcenter(
-        coords[i0], coords[i0 + 1],
-        coords[i1], coords[i1 + 1],
-        coords[i2], coords[i2 + 1]);
+    var i0x = coords[i0];
+    var i0y = coords[i0 + 1];
+    var i1x = coords[i1];
+    var i1y = coords[i1 + 1];
+    var i2x = coords[i2];
+    var i2y = coords[i2 + 1];
+
+    var center = circumcenter(i0x, i0y, i1x, i1y, i2x, i2y);
 
     // sort the points by distance from the seed triangle circumcenter
     quicksort(ids, coords, 0, ids.length - 1, center.x, center.y);
@@ -101,8 +109,6 @@ function Delaunay(points) {
     var xp, yp;
     for (var k = 0; k < ids.length; k++) {
         i = ids[k];
-        if (i === i0 || i === i1 || i === i2) continue;
-
         x = coords[i];
         y = coords[i + 1];
 
@@ -111,10 +117,18 @@ function Delaunay(points) {
         xp = x;
         yp = y;
 
+        // skip seed triangle points
+        if ((x === i0x && y === i0y) ||
+            (x === i1x && y === i1y) ||
+            (x === i2x && y === i2y)) continue;
+
         // find a visible edge on the convex hull
         var e = this.hull;
         while (area(x, y, e.x, e.y, e.next.x, e.next.y) >= 0) {
             e = e.next;
+            if (e === this.hull) {
+                throw new Error('Something is wrong with the input points.');
+            }
         }
         var walkBack = e === this.hull;
 
@@ -363,7 +377,7 @@ function quicksort(ids, coords, left, right, cx, cy) {
 function compare(coords, i, j, cx, cy) {
     var d1 = dist(coords[i], coords[i + 1], cx, cy);
     var d2 = dist(coords[j], coords[j + 1], cx, cy);
-    return (d1 - d2) || (coords[i] - coords[j]);
+    return (d1 - d2) || (coords[i] - coords[j]) || (coords[i + 1] - coords[j + 1]);
 }
 
 function swap(arr, i, j) {
