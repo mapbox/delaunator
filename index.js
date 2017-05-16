@@ -185,16 +185,16 @@ Delaunay.prototype = {
         var p0 = triangles[ar];
         var pr = triangles[a];
         var pl = triangles[al];
-        var p = triangles[bl];
+        var p1 = triangles[bl];
 
         var illegal = inCircle(
             coords[p0], coords[p0 + 1],
             coords[pr], coords[pr + 1],
             coords[pl], coords[pl + 1],
-            coords[p], coords[p + 1]);
+            coords[p1], coords[p1 + 1]);
 
         if (illegal) {
-            triangles[a] = p;
+            triangles[a] = p1;
             triangles[b] = p0;
 
             this._link(a, adjacent[bl]);
