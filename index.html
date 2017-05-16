@@ -61,10 +61,39 @@ ctx.lineCap = 'round';
 
 var updated = true;
 
+function mousePointerX(event) {
+    if (event.clientX !== void 0) {
+        return (
+            event.clientX +
+            document.body.scrollLeft +
+            document.documentElement.scrollLeft
+        );
+    } else {
+        return (event.pageX   !== void 0 && event.pageX)   ||
+               (event.offsetX !== void 0 && event.offsetX) ||
+               (event.layerX  !== void 0 && event.layerX);
+    }
+}
+
+function mousePointerY(event) {
+    if (event.clientY !== void 0) {
+        return (
+            event.clientY +
+            document.body.scrollTop +
+            document.documentElement.scrollTop
+        );
+    } else {
+        return (event.pageY   !== void 0 && event.pageY)   ||
+               (event.offsetY !== void 0 && event.offsetY) ||
+               (event.layerY  !== void 0 && event.layerY);
+    }
+}
+
 canvas.onmousemove = function (e) {
+    var bounds = canvas.getBoundingClientRect();
     points.push([
-        (e.layerX - padding) / ratio + minX,
-        (e.layerY - padding) / ratio + minY
+        (mousePointerX(e) - bounds.left - padding) / ratio + minX,
+        (mousePointerY(e) - bounds.top  - padding) / ratio + minY
     ]);
     console.time('delaunay');
     delaunay = new Delaunay(points);
