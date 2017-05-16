@@ -30,3 +30,12 @@ test('throws on all-collinear input', function (t) {
     });
     t.end();
 });
+
+test('supports custom point format', function (t) {
+    var d = new Delaunator(
+        [{x: 5, y: 5}, {x: 7, y: 5}, {x: 7, y: 6}],
+        function (p) { return p.x; },
+        function (p) { return p.y; });
+    t.same(d.triangles, [0, 2, 1]);
+    t.end();
+});

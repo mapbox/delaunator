@@ -1,8 +1,11 @@
 'use strict';
 
-module.exports = Delaunay;
+module.exports = Delaunator;
 
-function Delaunay(points) {
+function Delaunator(points, getX, getY) {
+
+    if (!getX) getX = defaultGetX;
+    if (!getY) getY = defaultGetY;
 
     var minX = Infinity;
     var minY = Infinity;
@@ -14,8 +17,8 @@ function Delaunay(points) {
 
     for (var i = 0; i < points.length; i++) {
         var p = points[i];
-        var x = p[0];
-        var y = p[1];
+        var x = getX(p);
+        var y = getY(p);
         ids.push(i);
         coords.push(x);
         coords.push(y);
@@ -179,7 +182,7 @@ function Delaunay(points) {
     }
 }
 
-Delaunay.prototype = {
+Delaunator.prototype = {
 
     _legalize: function (a) {
         var triangles = this.triangles;
@@ -384,4 +387,11 @@ function swap(arr, i, j) {
     var tmp = arr[i];
     arr[i] = arr[j];
     arr[j] = tmp;
+}
+
+function defaultGetX(p) {
+    return p[0];
+}
+function defaultGetY(p) {
+    return p[1];
 }
