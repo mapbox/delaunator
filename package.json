@@ -1,7 +1,7 @@
 {
   "name": "delaunator",
   "version": "1.0.0",
-  "description": "",
+  "description": "The fastest JavaScript library for Delaunay triangulation of 2D points",
   "main": "index.js",
   "dependencies": {},
   "devDependencies": {
@@ -14,7 +14,11 @@
   "eslintConfig": {
     "extends": "mourner"
   },
-  "keywords": [],
+  "keywords": [
+    "delaunay triangulation",
+    "computational geometry",
+    "algorithms"
+  ],
   "author": "Vladimir Agafonkin",
   "license": "ISC"
 }
