@@ -11,7 +11,7 @@ Implements a variation of the [Sweep-hull algorithm](http://s-hull.org/).
 ```js
 var points = [[168, 180], [168, 178], [168, 179], [168, 181], [168, 183], ...];
 
-var delaunay = new Delaunay(points);
+var delaunay = new Delaunator(points);
 console.log(delaunay.triangles);
 ```
 
@@ -19,7 +19,7 @@ console.log(delaunay.triangles);
 
 - [x] Implement the algorithm.
 - [x] Add a simple demo.
-- [ ] Add proper tests.
+- [x] Add proper tests.
 - [ ] Add a benchmark against similar libraries.
 - [ ] Clean up and document the API.
 - [ ] Release the first version to NPM.

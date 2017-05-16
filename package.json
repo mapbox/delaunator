@@ -6,10 +6,13 @@
   "dependencies": {},
   "devDependencies": {
     "eslint": "^3.19.0",
-    "eslint-config-mourner": "^2.0.1"
+    "eslint-config-mourner": "^2.0.1",
+    "tape": "^4.6.3"
   },
   "scripts": {
-    "test": "eslint index.js"
+    "lint": "eslint index.js test.js",
+    "pretest": "npm run lint",
+    "test": "tape test.js"
   },
   "eslintConfig": {
     "extends": "mourner"
