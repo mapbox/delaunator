@@ -37,18 +37,26 @@ A flat `Int32Array` array of triangle indices (each group of three numbers forms
 
 ## Performance
 
-Benchmark results for a uniform random distribution (`node bench.js`) against three fastest other libraries:
+Benchmark results against three fastest other libraries
+(`node bench.js` on a Macbook Pro Retina mid-2012, Nove v7.9.0):
 
-points | delaunator | [faster-del](https://github.com/Bathlamos/delaunay-triangulation) | [incr-del](https://github.com/mikolalysenko/incremental-delaunay) | [del-fast](https://github.com/ironwallaby/delaunay)
---: | --: | --: | --: | --:
-10000 | 26ms | 78ms | 81ms | 136ms
-20000 | 40ms | 140ms | 154ms | 386ms
-50000 | 174ms | 328ms | 428ms | 1.18s
-100000 | 327ms | 776ms | 874ms | 3.03s
-200000 | 658ms | 1.74s | 1.74s | 7.95s
-500000 | 2.07s | 3.87s | 4.3s | 28.2s
-1000000 | 4.95s | 6.99s | 9.03s | 76.96s
+#### Uniform distribution
 
+library | 10,000 | 20,000 | 50,000 | 100,000 | 200,000 | 500,000 | 1,000,000
+:-- | --: | --: | --: | --: | --: | --: | --:
+delaunator | 26ms | 40ms | 174ms | 327ms | 658ms | 2.07s | 4.95s
+[faster-delaunay](https://github.com/Bathlamos/delaunay-triangulation) | 78ms | 140ms | 328ms | 776ms | 1.74s | 3.87s | 6.99s
+[incremental-delaunay](https://github.com/mikolalysenko/incremental-delaunay) | 81ms | 154ms | 428ms | 874ms | 1.74s | 4.3s | 9.03s
+[delaunay-fast](https://github.com/ironwallaby/delaunay) | 136ms | 386ms | 1.18s | 3.03s | 7.95s | 28.2s | 76.96s
+
+#### Gaussian distribution
+
+library | 10,000 | 20,000 | 50,000 | 100,000 | 200,000 | 500,000 | 1,000,000
+:-- | --: | --: | --: | --: | --: | --: | --:
+delaunator | 22ms | 39ms | 162ms | 270ms | 586ms | 1.86s | 4.53s
+[faster-delaunay](https://github.com/Bathlamos/delaunay-triangulation) | 76ms | 172ms | 291ms | 692ms | 1.19s | 3.46s | 6.36s
+[incremental-delaunay](https://github.com/mikolalysenko/incremental-delaunay) | 74ms | 154ms | 410ms | 806ms | 1.67s | 4.27s | 8.3s
+[delaunay-fast](https://github.com/ironwallaby/delaunay) | 152ms | 340ms | 1.19s | 3.2s | 8.37s | 30.03s | 82.05s
 
 ## Papers
 

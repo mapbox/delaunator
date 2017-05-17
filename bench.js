@@ -28,10 +28,20 @@ for (var i = 0; i < counts.length; i++) {
 function uniform(count) {
     var points = [];
     for (var i = 0; i < count; i++) {
-        points.push([
-            Math.random() * 1e3,
-            Math.random() * 1e3
-        ]);
+        points.push([Math.random() * 1e3, Math.random() * 1e3]);
     }
     return points;
+}
+
+function gaussian(count) {
+    var points = [];
+    for (var i = 0; i < count; i++) {
+        points.push([pseudoNormal() * 1e3, pseudoNormal() * 1e3]);
+    }
+    return points;
+}
+
+function pseudoNormal() {
+    var v = Math.random() + Math.random() + Math.random() + Math.random() + Math.random() + Math.random();
+    return Math.min(0.5 * (v - 3) / 3, 1);
 }
