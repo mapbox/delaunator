@@ -10,7 +10,7 @@ var triangles = [623, 636, 619, 636, 444, 619, 619, 632, 623, 618, 624, 619, 624
 
 test('triangulates points', function (t) {
     var d = new Delaunator(points);
-    t.same(d.triangles, triangles);
+    t.same(Array.from(d.triangles), triangles);
     t.end();
 });
 

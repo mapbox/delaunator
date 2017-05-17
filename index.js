@@ -13,15 +13,15 @@ function Delaunator(points, getX, getY) {
     var maxY = -Infinity;
 
     var coords = this.coords = [];
-    var ids = this.ids = [];
+    var ids = this.ids = new Uint32Array(points.length);
 
     for (var i = 0; i < points.length; i++) {
         var p = points[i];
         var x = getX(p);
         var y = getY(p);
-        ids.push(i);
-        coords.push(x);
-        coords.push(y);
+        ids[i] = i;
+        coords[2 * i] = x;
+        coords[2 * i + 1] = y;
         if (x < minX) minX = x;
         if (y < minY) minY = y;
         if (x > maxX) maxX = x;
@@ -106,8 +106,17 @@ function Delaunator(points, getX, getY) {
     this.hull = insertNode(coords, i2, this.hull);
     this.hull.t = 2;
 
-    this.triangles = [i0, i1, i2];
-    var adjacent = this.adjacent = [-1, -1, -1];
+    var maxTriangles = 2 * points.length - 5;
+    var triangles = this.triangles = new Uint32Array(maxTriangles * 3);
+    triangles[0] = i0;
+    triangles[1] = i1;
+    triangles[2] = i2;
+    this.trianglesLen = 3;
+
+    var adjacent = this.adjacent = new Int32Array(maxTriangles * 3);
+    adjacent[0] = -1;
+    adjacent[1] = -1;
+    adjacent[2] = -1;
 
     var xp, yp;
     for (var k = 0; k < ids.length; k++) {
@@ -180,6 +189,10 @@ function Delaunator(points, getX, getY) {
             q = q.prev;
         }
     }
+
+    // trim typed triangle mesh arrays
+    this.triangles = triangles.subarray(0, this.trianglesLen);
+    this.adjacent = adjacent.subarray(0, this.trianglesLen);
 }
 
 Delaunator.prototype = {
@@ -227,14 +240,15 @@ Delaunator.prototype = {
 
     _link: function (a, b) {
         this.adjacent[a] = b;
-        this.adjacent[b] = a;
+        if (b !== -1) this.adjacent[b] = a;
     },
 
     _addTriangle(i, e) {
-        var t = this.triangles.length;
+        var t = this.trianglesLen;
         this.triangles[t] = e.i;
         this.triangles[t + 1] = i;
         this.triangles[t + 2] = e.next.i;
+        this.trianglesLen += 3;
         return t;
     }
 };
