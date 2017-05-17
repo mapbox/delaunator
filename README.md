@@ -38,7 +38,7 @@ A flat `Int32Array` array of triangle indices (each group of three numbers forms
 ## Performance
 
 Benchmark results against three fastest other libraries
-(`node bench.js` on a Macbook Pro Retina mid-2012, Nove v7.9.0):
+(`bench.js` on Macbook Pro Retina mid-2012, Node v7.9.0):
 
 #### Uniform distribution
 
