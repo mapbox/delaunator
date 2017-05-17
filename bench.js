@@ -1,13 +1,15 @@
 'use strict'; /* eslint no-new: 0, no-unused-vars: 0 */
 
 var Delaunator = require('./');
-var fasterDelaunay = require('faster-delaunay');
-var incrementalDelaunay = require('incremental-delaunay');
-var delaunayFast = require('delaunay-fast');
+// var fasterDelaunay = require('faster-delaunay');
+// var incrementalDelaunay = require('incremental-delaunay');
+// var delaunayFast = require('delaunay-fast');
+// var d3voronoi = require('d3-voronoi').voronoi();
 
 function triangulate(points) {
     new Delaunator(points);
     // fasterDelaunay(points).triangulate();
+    // d3voronoi(points);
     // incrementalDelaunay(points);
     // delaunayFast.triangulate(points);
 }
