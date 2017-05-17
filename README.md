@@ -7,7 +7,9 @@ Implements a variation of the [Sweep-hull algorithm](http://s-hull.org/).
 [![Build Status](https://travis-ci.org/mapbox/delaunator.svg?branch=master)](https://travis-ci.org/mapbox/delaunator)
 [![](https://img.shields.io/badge/simply-awesome-brightgreen.svg)](https://github.com/mourner/projects)
 
+
 ## [Demo](https://mapbox.github.io/delaunator/)
+
 
 ## Example
 
@@ -18,6 +20,7 @@ var delaunay = new Delaunator(points);
 console.log(delaunay.triangles);
 // [623, 636, 619,  636, 444, 619, ...]
 ```
+
 
 ## API Reference
 
@@ -30,6 +33,22 @@ Duplicate points are skipped.
 #### delaunay.triangles
 
 A flat `Int32Array` array of triangle indices (each group of three numbers forms a triangle).
+
+
+## Performance
+
+Benchmark results for a uniform random distribution (`node bench.js`) against three fastest other libraries:
+
+points | delaunator | [faster-del](https://github.com/Bathlamos/delaunay-triangulation) | [incr-del](https://github.com/mikolalysenko/incremental-delaunay) | [del-fast](https://github.com/ironwallaby/delaunay)
+--: | --: | --: | --: | --:
+10000 | 26ms | 78ms | 81ms | 136ms
+20000 | 40ms | 140ms | 154ms | 386ms
+50000 | 174ms | 328ms | 428ms | 1.18s
+100000 | 327ms | 776ms | 874ms | 3.03s
+200000 | 658ms | 1.74s | 1.74s | 7.95s
+500000 | 2.07s | 3.87s | 4.3s | 28.2s
+1000000 | 4.95s | 6.99s | 9.03s | 76.96s
+
 
 ## Papers
 

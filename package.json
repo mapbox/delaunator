@@ -10,7 +10,7 @@
     "tape": "^4.6.3"
   },
   "scripts": {
-    "lint": "eslint index.js test.js",
+    "lint": "eslint index.js test.js bench.js",
     "pretest": "npm run lint",
     "test": "tape test.js"
   },
