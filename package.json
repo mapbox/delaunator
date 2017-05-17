@@ -9,6 +9,10 @@
     "eslint-config-mourner": "^2.0.1",
     "tape": "^4.6.3"
   },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mapbox/delaunator.git"
+  },
   "scripts": {
     "lint": "eslint index.js test.js bench.js",
     "pretest": "npm run lint",
