@@ -94,17 +94,27 @@ function Delaunator(points, getX, getY) {
     var i2y = coords[2 * i2 + 1];
 
     var center = circumcenter(i0x, i0y, i1x, i1y, i2x, i2y);
+    this._cx = center.x;
+    this._cy = center.y;
 
     // sort the points by distance from the seed triangle circumcenter
     quicksort(ids, coords, 0, ids.length - 1, center.x, center.y);
 
+    // initialize a hash table for storing edges of the advancing convex hull
+    this._hashSize = Math.ceil(Math.sqrt(points.length));
+    this._hash = [];
+    for (i = 0; i < this._hashSize; i++) this._hash[i] = null;
+
     // initialize a circular doubly-linked list that will hold an advancing convex hull
-    this.hull = insertNode(coords, i0);
-    this.hull.t = 0;
-    this.hull = insertNode(coords, i1, this.hull);
-    this.hull.t = 1;
-    this.hull = insertNode(coords, i2, this.hull);
-    this.hull.t = 2;
+    var e = this.hull = insertNode(coords, i0);
+    this._hashEdge(e);
+    e.t = 0;
+    e = insertNode(coords, i1, e);
+    this._hashEdge(e);
+    e.t = 1;
+    e = insertNode(coords, i2, e);
+    this._hashEdge(e);
+    e.t = 2;
 
     var maxTriangles = 2 * points.length - 5;
     var triangles = this.triangles = new Uint32Array(maxTriangles * 3);
@@ -134,15 +144,24 @@ function Delaunator(points, getX, getY) {
             (x === i1x && y === i1y) ||
             (x === i2x && y === i2y)) continue;
 
-        // find a visible edge on the convex hull
-        var e = this.hull;
+        // find a visible edge on the convex hull using edge hash
+        var startKey = this._hashKey(x, y);
+        var key = startKey;
+        var start;
+        do {
+            start = this._hash[key];
+            key = (key + 1) % this._hashSize;
+        } while ((!start || start.removed) && key !== startKey);
+
+        e = start;
         while (area(x, y, e.x, e.y, e.next.x, e.next.y) >= 0) {
             e = e.next;
-            if (e === this.hull) {
+            if (e === start) {
                 throw new Error('Something is wrong with the input points.');
             }
         }
-        var walkBack = e === this.hull;
+
+        var walkBack = e === start;
 
         // add the first triangle from the point
         var t = this._addTriangle(i, e);
@@ -171,23 +190,27 @@ function Delaunator(points, getX, getY) {
             q = q.next;
         }
 
-        if (!walkBack) continue;
+        if (walkBack) {
+            // walk backward from the other side, adding more triangles and flipping
+            q = e.prev;
+            while (area(x, y, q.prev.x, q.prev.y, q.x, q.y) < 0) {
 
-        // walk backward from the other side, adding more triangles and flipping
-        q = e.prev;
-        while (area(x, y, q.prev.x, q.prev.y, q.x, q.y) < 0) {
+                t = this._addTriangle(i, q.prev);
+                adjacent[t] = -1;
+                this._link(t + 1, q.t);
+                this._link(t + 2, q.prev.t);
 
-            t = this._addTriangle(i, q.prev);
-            adjacent[t] = -1;
-            this._link(t + 1, q.t);
-            this._link(t + 2, q.prev.t);
+                this._legalize(t + 2);
 
-            this._legalize(t + 2);
-
-            q.prev.t = t;
-            this.hull = removeNode(q);
-            q = q.prev;
+                q.prev.t = t;
+                this.hull = removeNode(q);
+                q = q.prev;
+            }
         }
+
+        // save the two new edges in the hash table
+        this._hashEdge(e);
+        this._hashEdge(e.prev);
     }
 
     // trim typed triangle mesh arrays
@@ -196,6 +219,19 @@ function Delaunator(points, getX, getY) {
 }
 
 Delaunator.prototype = {
+
+    _hashEdge: function (e) {
+        this._hash[this._hashKey(e.x, e.y)] = e;
+    },
+
+    _hashKey: function (x, y) {
+        var dx = x - this._cx;
+        var dy = y - this._cy;
+        // use pseudo-angle: a measure that monotonically increases
+        // with real angle, but doesn't require expensive trigonometry
+        var p = 1 - dx / (Math.abs(dx) + Math.abs(dy));
+        return Math.floor((2 + (dy < 0 ? -p : p)) * (this._hashSize / 4));
+    },
 
     _legalize: function (a) {
         var triangles = this.triangles;
@@ -330,7 +366,8 @@ function insertNode(coords, i, prev) {
         y: coords[2 * i + 1],
         t: 0,
         prev: null,
-        next: null
+        next: null,
+        removed: false
     };
 
     if (!prev) {
@@ -349,6 +386,7 @@ function insertNode(coords, i, prev) {
 function removeNode(node) {
     node.prev.next = node.next;
     node.next.prev = node.prev;
+    node.removed = true;
     return node.prev;
 }
 
