@@ -2,20 +2,24 @@
   "name": "delaunator",
   "version": "1.0.2",
   "description": "A really fast JavaScript library for Delaunay triangulation of 2D points",
-  "main": "index.js",
+  "main": "./dist/delaunator.js",
+  "browser": "./dist/delaunator.js",
+  "module": "index",
   "dependencies": {},
   "devDependencies": {
     "eslint": "^3.19.0",
     "eslint-config-mourner": "^2.0.1",
-    "tape": "^4.6.3"
+    "tape": "^4.6.3",
+    "rollup": "^0.36"
   },
   "repository": {
     "type": "git",
     "url": "https://github.com/mapbox/delaunator.git"
   },
   "scripts": {
+    "build": "rm -rf dist && mkdir dist && rollup -f umd -n Delaunator -o dist/delaunator.js -- index.js",
     "lint": "eslint index.js test.js bench.js",
-    "pretest": "npm run lint",
+    "pretest": "npm run lint && npm run build",
     "test": "tape test.js"
   },
   "eslintConfig": {
