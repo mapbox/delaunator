@@ -23,7 +23,11 @@
     "test": "tape test.js"
   },
   "eslintConfig": {
-    "extends": "mourner"
+    "extends": "mourner",
+    "parserOptions": {
+            "ecmaVersion": 6,
+            "sourceType": "module"
+    }
   },
   "keywords": [
     "delaunay triangulation",
