@@ -118,15 +118,11 @@ function Delaunator(points, getX, getY) {
 
     var maxTriangles = 2 * points.length - 5;
     var triangles = this.triangles = new Uint32Array(maxTriangles * 3);
-    triangles[0] = i0;
-    triangles[1] = i1;
-    triangles[2] = i2;
-    this.trianglesLen = 3;
-
     var halfEdges = this.halfEdges = new Int32Array(maxTriangles * 3);
-    halfEdges[0] = -1;
-    halfEdges[1] = -1;
-    halfEdges[2] = -1;
+
+    this.trianglesLen = 0;
+
+    this._addTriangle(i0, i1, i2, -1, -1, -1);
 
     var xp, yp;
     for (var k = 0; k < ids.length; k++) {
@@ -164,10 +160,7 @@ function Delaunator(points, getX, getY) {
         var walkBack = e === start;
 
         // add the first triangle from the point
-        var t = this._addTriangle(i, e);
-        this._link(t, -1);
-        this._link(t + 1, -1);
-        this._link(t + 2, e.t);
+        var t = this._addTriangle(e.i, i, e.next.i, -1, -1, e.t);
 
         e.t = t; // keep track of boundary triangles on the hull
         e = insertNode(coords, i, e);
@@ -179,10 +172,7 @@ function Delaunator(points, getX, getY) {
         var q = e.next;
         while (area(x, y, q.x, q.y, q.next.x, q.next.y) < 0) {
 
-            t = this._addTriangle(i, q);
-            this._link(t, q.prev.t);
-            this._link(t + 1, -1);
-            this._link(t + 2, q.t);
+            t = this._addTriangle(q.i, i, q.next.i, q.prev.t, -1, q.t);
 
             q.prev.t = this._legalize(t + 2);
 
@@ -195,10 +185,7 @@ function Delaunator(points, getX, getY) {
             q = e.prev;
             while (area(x, y, q.prev.x, q.prev.y, q.x, q.y) < 0) {
 
-                t = this._addTriangle(i, q.prev);
-                this._link(t, -1);
-                this._link(t + 1, q.t);
-                this._link(t + 2, q.prev.t);
+                t = this._addTriangle(q.prev.i, i, q.i, -1, q.t, q.prev.t);
 
                 this._legalize(t + 2);
 
@@ -279,12 +266,20 @@ Delaunator.prototype = {
         if (b !== -1) this.halfEdges[b] = a;
     },
 
-    _addTriangle(i, e) {
+    // add a new triangle given vertex indices and adjacent half-edge ids
+    _addTriangle: function (i0, i1, i2, a, b, c) {
         var t = this.trianglesLen;
-        this.triangles[t] = e.i;
-        this.triangles[t + 1] = i;
-        this.triangles[t + 2] = e.next.i;
+
+        this.triangles[t] = i0;
+        this.triangles[t + 1] = i1;
+        this.triangles[t + 2] = i2;
+
+        this._link(t, a);
+        this._link(t + 1, b);
+        this._link(t + 2, c);
+
         this.trianglesLen += 3;
+
         return t;
     }
 };
