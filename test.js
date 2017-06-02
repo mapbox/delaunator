@@ -14,6 +14,18 @@ test('triangulates points', function (t) {
     t.end();
 });
 
+test('produces properly connected halfedges', function (t) {
+    var d = new Delaunator(points);
+    for (var i = 0; i < d.halfedges.length; i++) {
+        var i2 = d.halfedges[i];
+        if (i2 !== -1 && d.halfedges[i2] !== i) {
+            t.fail('invalid halfedge connection');
+        }
+    }
+    t.pass('halfedges are valid');
+    t.end();
+});
+
 test('throws on small number of points', function (t) {
     t.throws(function () {
         new Delaunator(points.slice(0, 1));

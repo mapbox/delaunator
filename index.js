@@ -118,7 +118,7 @@ function Delaunator(points, getX, getY) {
 
     var maxTriangles = 2 * points.length - 5;
     var triangles = this.triangles = new Uint32Array(maxTriangles * 3);
-    var halfEdges = this.halfEdges = new Int32Array(maxTriangles * 3);
+    var halfedges = this.halfedges = new Int32Array(maxTriangles * 3);
 
     this.trianglesLen = 0;
 
@@ -202,7 +202,7 @@ function Delaunator(points, getX, getY) {
 
     // trim typed triangle mesh arrays
     this.triangles = triangles.subarray(0, this.trianglesLen);
-    this.halfEdges = halfEdges.subarray(0, this.trianglesLen);
+    this.halfedges = halfedges.subarray(0, this.trianglesLen);
 }
 
 Delaunator.prototype = {
@@ -223,9 +223,9 @@ Delaunator.prototype = {
     _legalize: function (a) {
         var triangles = this.triangles;
         var coords = this.coords;
-        var halfEdges = this.halfEdges;
+        var halfedges = this.halfedges;
 
-        var b = halfEdges[a];
+        var b = halfedges[a];
 
         var a0 = a - a % 3;
         var b0 = b - b % 3;
@@ -250,8 +250,8 @@ Delaunator.prototype = {
             triangles[a] = p1;
             triangles[b] = p0;
 
-            this._link(a, halfEdges[bl]);
-            this._link(b, halfEdges[ar]);
+            this._link(a, halfedges[bl]);
+            this._link(b, halfedges[ar]);
             this._link(ar, bl);
 
             this._legalize(a);
@@ -262,8 +262,8 @@ Delaunator.prototype = {
     },
 
     _link: function (a, b) {
-        this.halfEdges[a] = b;
-        if (b !== -1) this.halfEdges[b] = a;
+        this.halfedges[a] = b;
+        if (b !== -1) this.halfedges[b] = a;
     },
 
     // add a new triangle given vertex indices and adjacent half-edge ids

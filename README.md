@@ -31,9 +31,30 @@ Duplicate points are skipped.
 
 #### delaunay.triangles
 
-A flat `Int32Array` array of triangle indices (each group of three numbers forms a triangle).
+A flat `Int32Array` array of triangle vertex indices (each group of three numbers forms a triangle).
 All triangles are directed counterclockwise.
 
+To get the coordinates of all triangles, use:
+
+```js
+for (var i = 0; i < triangles.length; i += 3) {
+    coordinates.push([
+        points[triangles[i]],
+        points[triangles[i + 1]],
+        points[triangles[i + 2]]
+    ]);
+}
+```
+
+#### delaunay.halfedges
+
+A flat `Int32Array` array of triangle half-edge indices that allows you to traverse the triangulation.
+`i`-th half-edge in the array corresponds to vertex `triangles[i]` the half-edge is coming from.
+`halfedges[i]` is the index of a twin half-edge in an adjacent triangle
+(or `-1` for outer half-edges on the convex hull).
+
+The flat array-based data structures might be counterintuitive,
+but they're one of the key reasons this library is fast.
 
 ## Performance
 
