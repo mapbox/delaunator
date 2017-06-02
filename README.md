@@ -32,6 +32,7 @@ Duplicate points are skipped.
 #### delaunay.triangles
 
 A flat `Int32Array` array of triangle indices (each group of three numbers forms a triangle).
+All triangles are directed counterclockwise.
 
 
 ## Performance
