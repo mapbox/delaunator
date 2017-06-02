@@ -123,10 +123,10 @@ function Delaunator(points, getX, getY) {
     triangles[2] = i2;
     this.trianglesLen = 3;
 
-    var adjacent = this.adjacent = new Int32Array(maxTriangles * 3);
-    adjacent[0] = -1;
-    adjacent[1] = -1;
-    adjacent[2] = -1;
+    var halfEdges = this.halfEdges = new Int32Array(maxTriangles * 3);
+    halfEdges[0] = -1;
+    halfEdges[1] = -1;
+    halfEdges[2] = -1;
 
     var xp, yp;
     for (var k = 0; k < ids.length; k++) {
@@ -165,8 +165,8 @@ function Delaunator(points, getX, getY) {
 
         // add the first triangle from the point
         var t = this._addTriangle(i, e);
-        adjacent[t] = -1;
-        adjacent[t + 1] = -1;
+        this._link(t, -1);
+        this._link(t + 1, -1);
         this._link(t + 2, e.t);
 
         e.t = t; // keep track of boundary triangles on the hull
@@ -181,7 +181,7 @@ function Delaunator(points, getX, getY) {
 
             t = this._addTriangle(i, q);
             this._link(t, q.prev.t);
-            adjacent[t + 1] = -1;
+            this._link(t + 1, -1);
             this._link(t + 2, q.t);
 
             q.prev.t = this._legalize(t + 2);
@@ -196,7 +196,7 @@ function Delaunator(points, getX, getY) {
             while (area(x, y, q.prev.x, q.prev.y, q.x, q.y) < 0) {
 
                 t = this._addTriangle(i, q.prev);
-                adjacent[t] = -1;
+                this._link(t, -1);
                 this._link(t + 1, q.t);
                 this._link(t + 2, q.prev.t);
 
@@ -215,7 +215,7 @@ function Delaunator(points, getX, getY) {
 
     // trim typed triangle mesh arrays
     this.triangles = triangles.subarray(0, this.trianglesLen);
-    this.adjacent = adjacent.subarray(0, this.trianglesLen);
+    this.halfEdges = halfEdges.subarray(0, this.trianglesLen);
 }
 
 Delaunator.prototype = {
@@ -230,15 +230,15 @@ Delaunator.prototype = {
         // use pseudo-angle: a measure that monotonically increases
         // with real angle, but doesn't require expensive trigonometry
         var p = 1 - dx / (Math.abs(dx) + Math.abs(dy));
-        return Math.floor((2 + (dy < 0 ? -p : p)) * (this._hashSize / 4));
+        return Math.floor((2 + (dy < 0 ? -p : p)) / 4 * this._hashSize);
     },
 
     _legalize: function (a) {
         var triangles = this.triangles;
         var coords = this.coords;
-        var adjacent = this.adjacent;
+        var halfEdges = this.halfEdges;
 
-        var b = adjacent[a];
+        var b = halfEdges[a];
 
         var a0 = a - a % 3;
         var b0 = b - b % 3;
@@ -263,8 +263,8 @@ Delaunator.prototype = {
             triangles[a] = p1;
             triangles[b] = p0;
 
-            this._link(a, adjacent[bl]);
-            this._link(b, adjacent[ar]);
+            this._link(a, halfEdges[bl]);
+            this._link(b, halfEdges[ar]);
             this._link(ar, bl);
 
             this._legalize(a);
@@ -275,8 +275,8 @@ Delaunator.prototype = {
     },
 
     _link: function (a, b) {
-        this.adjacent[a] = b;
-        if (b !== -1) this.adjacent[b] = a;
+        this.halfEdges[a] = b;
+        if (b !== -1) this.halfEdges[b] = a;
     },
 
     _addTriangle(i, e) {
