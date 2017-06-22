@@ -1,4 +1,4 @@
-'use strict'; /* eslint no-new: 0, no-unused-vars: 0 */
+/* eslint no-new: 0, no-unused-vars: 0 */
 
 var Delaunator = require('./');
 // var fasterDelaunay = require('faster-delaunay');
