@@ -5,7 +5,7 @@
   "main": "index.js",
   "dependencies": {},
   "devDependencies": {
-    "eslint": "^3.19.0",
+    "eslint": "^4.0.0",
     "eslint-config-mourner": "^2.0.1",
     "tape": "^4.6.3"
   },

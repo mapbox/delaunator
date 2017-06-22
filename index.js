@@ -78,8 +78,8 @@ function Delaunator(points, getX, getY) {
 
     // swap the order of the seed points for counter-clockwise orientation
     if (area(coords[2 * i0], coords[2 * i0 + 1],
-             coords[2 * i1], coords[2 * i1 + 1],
-             coords[2 * i2], coords[2 * i2 + 1]) < 0) {
+        coords[2 * i1], coords[2 * i1 + 1],
+        coords[2 * i2], coords[2 * i2 + 1]) < 0) {
 
         var tmp = i1;
         i1 = i2;
@@ -171,11 +171,8 @@ function Delaunator(points, getX, getY) {
         // walk forward through the hull, adding more triangles and flipping recursively
         var q = e.next;
         while (area(x, y, q.x, q.y, q.next.x, q.next.y) < 0) {
-
             t = this._addTriangle(q.i, i, q.next.i, q.prev.t, -1, q.t);
-
             q.prev.t = this._legalize(t + 2);
-
             this.hull = removeNode(q);
             q = q.next;
         }
@@ -184,11 +181,8 @@ function Delaunator(points, getX, getY) {
             // walk backward from the other side, adding more triangles and flipping
             q = e.prev;
             while (area(x, y, q.prev.x, q.prev.y, q.x, q.y) < 0) {
-
                 t = this._addTriangle(q.prev.i, i, q.i, -1, q.t, q.prev.t);
-
                 this._legalize(t + 2);
-
                 q.prev.t = t;
                 this.hull = removeNode(q);
                 q = q.prev;
@@ -306,11 +300,9 @@ function inCircle(ax, ay, bx, by, cx, cy, px, py) {
     var bp = bx * bx + by * by;
     var cp = cx * cx + cy * cy;
 
-    var det = ax * (by * cp - bp * cy) -
-              ay * (bx * cp - bp * cx) +
-              ap * (bx * cy - by * cx);
-
-    return det < 0;
+    return ax * (by * cp - bp * cy) -
+           ay * (bx * cp - bp * cx) +
+           ap * (bx * cy - by * cx) < 0;
 }
 
 function circumradius(ax, ay, bx, by, cx, cy) {
