@@ -167,6 +167,9 @@ function Delaunator(points, getX, getY) {
 
         // recursively flip triangles from the point until they satisfy the Delaunay condition
         e.t = this._legalize(t + 2);
+        if (e.prev.prev.t === halfedges[t + 1]) {
+            e.prev.prev.t = t + 2;
+        }
 
         // walk forward through the hull, adding more triangles and flipping recursively
         var q = e.next;

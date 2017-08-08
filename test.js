@@ -15,6 +15,14 @@ test('triangulates points', function (t) {
 });
 
 test('produces properly connected halfedges', function (t) {
+    testHalfedges(t, points);
+});
+
+test('issue #11', function (t) {
+    testHalfedges(t, [[516, 661], [369, 793], [426, 539], [273, 525], [204, 694], [747, 750], [454, 390]]);
+});
+
+function testHalfedges(t, points) {
     var d = new Delaunator(points);
     for (var i = 0; i < d.halfedges.length; i++) {
         var i2 = d.halfedges[i];
@@ -24,7 +32,7 @@ test('produces properly connected halfedges', function (t) {
     }
     t.pass('halfedges are valid');
     t.end();
-});
+}
 
 test('throws on small number of points', function (t) {
     t.throws(function () {
