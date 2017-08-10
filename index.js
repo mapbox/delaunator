@@ -229,7 +229,6 @@ Delaunator.prototype = {
 
         var al = a0 + (a + 1) % 3;
         var ar = a0 + (a + 2) % 3;
-        var br = b0 + (b + 1) % 3;
         var bl = b0 + (b + 2) % 3;
 
         var p0 = triangles[ar];
@@ -250,6 +249,8 @@ Delaunator.prototype = {
             this._link(a, halfedges[bl]);
             this._link(b, halfedges[ar]);
             this._link(ar, bl);
+
+            var br = b0 + (b + 1) % 3;
 
             this._legalize(a);
             return this._legalize(br);
