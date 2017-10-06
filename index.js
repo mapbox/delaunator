@@ -1,6 +1,7 @@
 'use strict';
 
 module.exports = Delaunator;
+module.exports.default = Delaunator;
 
 function Delaunator(points, getX, getY) {
 
