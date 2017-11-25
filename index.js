@@ -1,7 +1,8 @@
-'use strict';
-
-module.exports = Delaunator;
-module.exports.default = Delaunator;
+(function (global, factory) {
+  typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
+  typeof define === 'function' && define.amd ? define(factory) :
+  (global.Delaunator = factory());
+}(this, (function () { 'use strict';
 
 function Delaunator(points, getX, getY) {
 
@@ -439,3 +440,7 @@ function defaultGetX(p) {
 function defaultGetY(p) {
     return p[1];
 }
+
+return Delaunator;
+
+})));
