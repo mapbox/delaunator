@@ -25,6 +25,10 @@
     "build-min": "browserify index.js -s delaunator | uglifyjs -c -m > delaunator.min.js",
     "prepare": "npm run build && npm run build-min"
   },
+  "files": [
+    "delaunator.js",
+    "delaunator.min.js"
+  ],
   "eslintConfig": {
     "extends": "mourner"
   },
