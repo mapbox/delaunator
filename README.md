@@ -20,6 +20,12 @@ console.log(delaunay.triangles);
 // [623, 636, 619,  636, 444, 619, ...]
 ```
 
+## Install
+
+Install with NPM (`npm install delaunator`), or use the following builds in the browser:
+
+- [development build](https://unpkg.com/delaunator@1.0.5/delaunator.js)
+- [minified build](https://unpkg.com/delaunator@1.0.5/delaunator.min.js)
 
 ## API Reference
 
