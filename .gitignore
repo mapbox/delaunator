@@ -2,3 +2,5 @@ node_modules
 tmp
 *.log
 yarn.lock
+delaunator.js
+delaunator.min.js
