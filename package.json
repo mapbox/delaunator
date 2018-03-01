@@ -21,8 +21,8 @@
     "lint": "eslint index.js test.js bench.js",
     "pretest": "npm run lint",
     "test": "tape test.js",
-    "build": "browserify index.js -s delaunator -o delaunator.js",
-    "build-min": "browserify index.js -s delaunator | uglifyjs -c -m > delaunator.min.js",
+    "build": "browserify index.js -s Delaunator -o delaunator.js",
+    "build-min": "browserify index.js -s Delaunator | uglifyjs -c -m > delaunator.min.js",
     "prepare": "npm run build && npm run build-min"
   },
   "files": [
