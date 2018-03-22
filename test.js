@@ -9,7 +9,7 @@ var triangles = [623, 636, 619, 636, 444, 619, 619, 632, 623, 618, 624, 619, 624
 /* eslint no-new: 0 */
 
 test('triangulates points', function (t) {
-    var d = new Delaunator(points);
+    var d = Delaunator.from(points);
     t.same(Array.from(d.triangles), triangles);
     t.end();
 });
@@ -23,7 +23,7 @@ test('issue #11', function (t) {
 });
 
 function testHalfedges(t, points) {
-    var d = new Delaunator(points);
+    var d = Delaunator.from(points);
     for (var i = 0; i < d.halfedges.length; i++) {
         var i2 = d.halfedges[i];
         if (i2 !== -1 && d.halfedges[i2] !== i) {
@@ -36,23 +36,23 @@ function testHalfedges(t, points) {
 
 test('throws on small number of points', function (t) {
     t.throws(function () {
-        new Delaunator(points.slice(0, 1));
+        Delaunator.from(points.slice(0, 1));
     });
     t.throws(function () {
-        new Delaunator(points.slice(0, 2));
+        Delaunator.from(points.slice(0, 2));
     });
     t.end();
 });
 
 test('throws on all-collinear input', function (t) {
     t.throws(function () {
-        new Delaunator([[0, 0], [1, 0], [2, 0], [3, 0]]);
+        Delaunator.from([[0, 0], [1, 0], [2, 0], [3, 0]]);
     });
     t.end();
 });
 
 test('supports custom point format', function (t) {
-    var d = new Delaunator(
+    var d = Delaunator.from(
         [{x: 5, y: 5}, {x: 7, y: 5}, {x: 7, y: 6}],
         function (p) { return p.x; },
         function (p) { return p.y; });

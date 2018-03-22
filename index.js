@@ -3,30 +3,41 @@
 module.exports = Delaunator;
 module.exports.default = Delaunator;
 
-function Delaunator(points, getX, getY) {
-
+Delaunator.from = function (points, getX, getY) {
     if (!getX) getX = defaultGetX;
     if (!getY) getY = defaultGetY;
 
+    var n = points.length;
+    var coords = new Float64Array(n * 2);
+
+    for (var i = 0; i < n; i++) {
+        var p = points[i];
+        coords[2 * i] = getX(p);
+        coords[2 * i + 1] = getY(p);
+    }
+
+    return new Delaunator(coords);
+};
+
+function Delaunator(coords) {
     var minX = Infinity;
     var minY = Infinity;
     var maxX = -Infinity;
     var maxY = -Infinity;
 
-    var coords = this.coords = [];
-    var ids = this.ids = new Uint32Array(points.length);
+    var n = coords.length / 2;
+    var ids = this.ids = new Uint32Array(n);
 
-    for (var i = 0; i < points.length; i++) {
-        var p = points[i];
-        var x = getX(p);
-        var y = getY(p);
-        ids[i] = i;
-        coords[2 * i] = x;
-        coords[2 * i + 1] = y;
+    this.coords = coords;
+
+    for (var i = 0; i < n; i++) {
+        var x = coords[2 * i];
+        var y = coords[2 * i + 1];
         if (x < minX) minX = x;
         if (y < minY) minY = y;
         if (x > maxX) maxX = x;
         if (y > maxY) maxY = y;
+        ids[i] = i;
     }
 
     var cx = (minX + maxX) / 2;
@@ -36,7 +47,7 @@ function Delaunator(points, getX, getY) {
     var i0, i1, i2;
 
     // pick a seed point close to the centroid
-    for (i = 0; i < points.length; i++) {
+    for (i = 0; i < n; i++) {
         var d = dist(cx, cy, coords[2 * i], coords[2 * i + 1]);
         if (d < minDist) {
             i0 = i;
@@ -47,7 +58,7 @@ function Delaunator(points, getX, getY) {
     minDist = Infinity;
 
     // find the point closest to the seed
-    for (i = 0; i < points.length; i++) {
+    for (i = 0; i < n; i++) {
         if (i === i0) continue;
         d = dist(coords[2 * i0], coords[2 * i0 + 1], coords[2 * i], coords[2 * i + 1]);
         if (d < minDist && d > 0) {
@@ -59,7 +70,7 @@ function Delaunator(points, getX, getY) {
     var minRadius = Infinity;
 
     // find the third point which forms the smallest circumcircle with the first two
-    for (i = 0; i < points.length; i++) {
+    for (i = 0; i < n; i++) {
         if (i === i0 || i === i1) continue;
 
         var r = circumradius(
@@ -102,7 +113,7 @@ function Delaunator(points, getX, getY) {
     quicksort(ids, coords, 0, ids.length - 1, center.x, center.y);
 
     // initialize a hash table for storing edges of the advancing convex hull
-    this._hashSize = Math.ceil(Math.sqrt(points.length));
+    this._hashSize = Math.ceil(Math.sqrt(n));
     this._hash = [];
     for (i = 0; i < this._hashSize; i++) this._hash[i] = null;
 
@@ -117,7 +128,7 @@ function Delaunator(points, getX, getY) {
     this._hashEdge(e);
     e.t = 2;
 
-    var maxTriangles = 2 * points.length - 5;
+    var maxTriangles = 2 * n - 5;
     var triangles = this.triangles = new Uint32Array(maxTriangles * 3);
     var halfedges = this.halfedges = new Int32Array(maxTriangles * 3);
 
