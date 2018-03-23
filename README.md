@@ -15,7 +15,7 @@ A really fast JavaScript library for
 ```js
 var points = [[168, 180], [168, 178], [168, 179], [168, 181], [168, 183], ...];
 
-var delaunay = new Delaunator(points);
+var delaunay = Delaunator.from(points);
 console.log(delaunay.triangles);
 // [623, 636, 619,  636, 444, 619, ...]
 ```
@@ -29,7 +29,7 @@ Install with NPM (`npm install delaunator`), or use the following builds in the 
 
 ## API Reference
 
-#### new Delaunator(points[, getX, getY])
+#### Delaunator.from(points[, getX, getY])
 
 Constructs a delaunay triangulation object given an array of points (`[x, y]` by default).
 `getX` and `getY` are optional functions of the form `(point) => value` for custom point formats.
