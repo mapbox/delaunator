@@ -82,7 +82,7 @@ but they're one of the key reasons this library is fast.
 ## Performance
 
 Benchmark results against four fastest other libraries
-(`bench.js` on Macbook Pro Retina 15" 2017, Node v8.10.0):
+(`npm run bench` on Macbook Pro Retina 15" 2017, Node v8.10.0):
 
 library | 10,000 | 20,000 | 50,000 | 100,000 | 200,000 | 500,000 | 1,000,000
 :-- | --: | --: | --: | --: | --: | --: | --:

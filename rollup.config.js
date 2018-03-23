@@ -13,5 +13,5 @@ const config = (file, plugins) => ({
 
 export default [
     config('delaunator.js', [buble()]),
-    config('delaunator.min.js', [buble(), uglify()])
+    config('delaunator.min.js', [uglify(), buble()])
 ];

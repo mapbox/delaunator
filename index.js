@@ -5,11 +5,11 @@ export default class Delaunator {
         if (!getX) getX = defaultGetX;
         if (!getY) getY = defaultGetY;
 
-        var n = points.length;
-        var coords = new Float64Array(n * 2);
+        const n = points.length;
+        const coords = new Float64Array(n * 2);
 
-        for (var i = 0; i < n; i++) {
-            var p = points[i];
+        for (let i = 0; i < n; i++) {
+            const p = points[i];
             coords[2 * i] = getX(p);
             coords[2 * i + 1] = getY(p);
         }
@@ -20,19 +20,19 @@ export default class Delaunator {
     constructor(coords) {
         if (!ArrayBuffer.isView(coords)) throw new Error('Expected coords to be a typed array.');
 
-        var minX = Infinity;
-        var minY = Infinity;
-        var maxX = -Infinity;
-        var maxY = -Infinity;
+        let minX = Infinity;
+        let minY = Infinity;
+        let maxX = -Infinity;
+        let maxY = -Infinity;
 
-        var n = coords.length >> 1;
-        var ids = this.ids = new Uint32Array(n);
+        const n = coords.length >> 1;
+        const ids = this.ids = new Uint32Array(n);
 
         this.coords = coords;
 
-        for (var i = 0; i < n; i++) {
-            var x = coords[2 * i];
-            var y = coords[2 * i + 1];
+        for (let i = 0; i < n; i++) {
+            const x = coords[2 * i];
+            const y = coords[2 * i + 1];
             if (x < minX) minX = x;
             if (y < minY) minY = y;
             if (x > maxX) maxX = x;
@@ -40,15 +40,15 @@ export default class Delaunator {
             ids[i] = i;
         }
 
-        var cx = (minX + maxX) / 2;
-        var cy = (minY + maxY) / 2;
+        const cx = (minX + maxX) / 2;
+        const cy = (minY + maxY) / 2;
 
-        var minDist = Infinity;
-        var i0, i1, i2;
+        let minDist = Infinity;
+        let i0, i1, i2;
 
         // pick a seed point close to the centroid
-        for (i = 0; i < n; i++) {
-            var d = dist(cx, cy, coords[2 * i], coords[2 * i + 1]);
+        for (let i = 0; i < n; i++) {
+            const d = dist(cx, cy, coords[2 * i], coords[2 * i + 1]);
             if (d < minDist) {
                 i0 = i;
                 minDist = d;
@@ -58,22 +58,22 @@ export default class Delaunator {
         minDist = Infinity;
 
         // find the point closest to the seed
-        for (i = 0; i < n; i++) {
+        for (let i = 0; i < n; i++) {
             if (i === i0) continue;
-            d = dist(coords[2 * i0], coords[2 * i0 + 1], coords[2 * i], coords[2 * i + 1]);
+            const d = dist(coords[2 * i0], coords[2 * i0 + 1], coords[2 * i], coords[2 * i + 1]);
             if (d < minDist && d > 0) {
                 i1 = i;
                 minDist = d;
             }
         }
 
-        var minRadius = Infinity;
+        let minRadius = Infinity;
 
         // find the third point which forms the smallest circumcircle with the first two
-        for (i = 0; i < n; i++) {
+        for (let i = 0; i < n; i++) {
             if (i === i0 || i === i1) continue;
 
-            var r = circumradius(
+            const r = circumradius(
                 coords[2 * i0], coords[2 * i0 + 1],
                 coords[2 * i1], coords[2 * i1 + 1],
                 coords[2 * i], coords[2 * i + 1]);
@@ -93,19 +93,19 @@ export default class Delaunator {
             coords[2 * i1], coords[2 * i1 + 1],
             coords[2 * i2], coords[2 * i2 + 1]) < 0) {
 
-            var tmp = i1;
+            const tmp = i1;
             i1 = i2;
             i2 = tmp;
         }
 
-        var i0x = coords[2 * i0];
-        var i0y = coords[2 * i0 + 1];
-        var i1x = coords[2 * i1];
-        var i1y = coords[2 * i1 + 1];
-        var i2x = coords[2 * i2];
-        var i2y = coords[2 * i2 + 1];
+        const i0x = coords[2 * i0];
+        const i0y = coords[2 * i0 + 1];
+        const i1x = coords[2 * i1];
+        const i1y = coords[2 * i1 + 1];
+        const i2x = coords[2 * i2];
+        const i2y = coords[2 * i2 + 1];
 
-        var center = circumcenter(i0x, i0y, i1x, i1y, i2x, i2y);
+        const center = circumcenter(i0x, i0y, i1x, i1y, i2x, i2y);
         this._cx = center.x;
         this._cy = center.y;
 
@@ -115,10 +115,10 @@ export default class Delaunator {
         // initialize a hash table for storing edges of the advancing convex hull
         this._hashSize = Math.ceil(Math.sqrt(n));
         this._hash = [];
-        for (i = 0; i < this._hashSize; i++) this._hash[i] = null;
+        for (let i = 0; i < this._hashSize; i++) this._hash[i] = null;
 
         // initialize a circular doubly-linked list that will hold an advancing convex hull
-        var e = this.hull = insertNode(coords, i0);
+        let e = this.hull = insertNode(coords, i0);
         this._hashEdge(e);
         e.t = 0;
         e = insertNode(coords, i1, e);
@@ -128,19 +128,18 @@ export default class Delaunator {
         this._hashEdge(e);
         e.t = 2;
 
-        var maxTriangles = 2 * n - 5;
-        var triangles = this.triangles = new Uint32Array(maxTriangles * 3);
-        var halfedges = this.halfedges = new Int32Array(maxTriangles * 3);
+        const maxTriangles = 2 * n - 5;
+        const triangles = this.triangles = new Uint32Array(maxTriangles * 3);
+        const halfedges = this.halfedges = new Int32Array(maxTriangles * 3);
 
         this.trianglesLen = 0;
 
         this._addTriangle(i0, i1, i2, -1, -1, -1);
 
-        var xp, yp;
-        for (var k = 0; k < ids.length; k++) {
-            i = ids[k];
-            x = coords[2 * i];
-            y = coords[2 * i + 1];
+        for (let k = 0, xp, yp; k < ids.length; k++) {
+            const i = ids[k];
+            const x = coords[2 * i];
+            const y = coords[2 * i + 1];
 
             // skip duplicate points
             if (x === xp && y === yp) continue;
@@ -153,9 +152,9 @@ export default class Delaunator {
                 (x === i2x && y === i2y)) continue;
 
             // find a visible edge on the convex hull using edge hash
-            var startKey = this._hashKey(x, y);
-            var key = startKey;
-            var start;
+            const startKey = this._hashKey(x, y);
+            let key = startKey;
+            let start;
             do {
                 start = this._hash[key];
                 key = (key + 1) % this._hashSize;
@@ -169,10 +168,10 @@ export default class Delaunator {
                 }
             }
 
-            var walkBack = e === start;
+            const walkBack = e === start;
 
             // add the first triangle from the point
-            var t = this._addTriangle(e.i, i, e.next.i, -1, -1, e.t);
+            let t = this._addTriangle(e.i, i, e.next.i, -1, -1, e.t);
 
             e.t = t; // keep track of boundary triangles on the hull
             e = insertNode(coords, i, e);
@@ -184,7 +183,7 @@ export default class Delaunator {
             }
 
             // walk forward through the hull, adding more triangles and flipping recursively
-            var q = e.next;
+            let q = e.next;
             while (area(x, y, q.x, q.y, q.next.x, q.next.y) < 0) {
                 t = this._addTriangle(q.i, i, q.next.i, q.prev.t, -1, q.t);
                 q.prev.t = this._legalize(t + 2);
@@ -219,34 +218,32 @@ export default class Delaunator {
     }
 
     _hashKey(x, y) {
-        var dx = x - this._cx;
-        var dy = y - this._cy;
+        const dx = x - this._cx;
+        const dy = y - this._cy;
         // use pseudo-angle: a measure that monotonically increases
         // with real angle, but doesn't require expensive trigonometry
-        var p = 1 - dx / (Math.abs(dx) + Math.abs(dy));
+        const p = 1 - dx / (Math.abs(dx) + Math.abs(dy));
         return Math.floor((2 + (dy < 0 ? -p : p)) / 4 * this._hashSize);
     }
 
     _legalize(a) {
-        var triangles = this.triangles;
-        var coords = this.coords;
-        var halfedges = this.halfedges;
+        const {triangles, coords, halfedges} = this;
 
-        var b = halfedges[a];
+        const b = halfedges[a];
 
-        var a0 = a - a % 3;
-        var b0 = b - b % 3;
+        const a0 = a - a % 3;
+        const b0 = b - b % 3;
 
-        var al = a0 + (a + 1) % 3;
-        var ar = a0 + (a + 2) % 3;
-        var bl = b0 + (b + 2) % 3;
+        const al = a0 + (a + 1) % 3;
+        const ar = a0 + (a + 2) % 3;
+        const bl = b0 + (b + 2) % 3;
 
-        var p0 = triangles[ar];
-        var pr = triangles[a];
-        var pl = triangles[al];
-        var p1 = triangles[bl];
+        const p0 = triangles[ar];
+        const pr = triangles[a];
+        const pl = triangles[al];
+        const p1 = triangles[bl];
 
-        var illegal = inCircle(
+        const illegal = inCircle(
             coords[2 * p0], coords[2 * p0 + 1],
             coords[2 * pr], coords[2 * pr + 1],
             coords[2 * pl], coords[2 * pl + 1],
@@ -260,7 +257,7 @@ export default class Delaunator {
             this._link(b, halfedges[ar]);
             this._link(ar, bl);
 
-            var br = b0 + (b + 1) % 3;
+            const br = b0 + (b + 1) % 3;
 
             this._legalize(a);
             return this._legalize(br);
@@ -276,7 +273,7 @@ export default class Delaunator {
 
     // add a new triangle given vertex indices and adjacent half-edge ids
     _addTriangle(i0, i1, i2, a, b, c) {
-        var t = this.trianglesLen;
+        const t = this.trianglesLen;
 
         this.triangles[t] = i0;
         this.triangles[t + 1] = i1;
@@ -293,8 +290,8 @@ export default class Delaunator {
 }
 
 function dist(ax, ay, bx, by) {
-    var dx = ax - bx;
-    var dy = ay - by;
+    const dx = ax - bx;
+    const dy = ay - by;
     return dx * dx + dy * dy;
 }
 
@@ -310,9 +307,9 @@ function inCircle(ax, ay, bx, by, cx, cy, px, py) {
     cx -= px;
     cy -= py;
 
-    var ap = ax * ax + ay * ay;
-    var bp = bx * bx + by * by;
-    var cp = cx * cx + cy * cy;
+    const ap = ax * ax + ay * ay;
+    const bp = bx * bx + by * by;
+    const cp = cx * cx + cy * cy;
 
     return ax * (by * cp - bp * cy) -
            ay * (bx * cp - bp * cx) +
@@ -325,16 +322,16 @@ function circumradius(ax, ay, bx, by, cx, cy) {
     cx -= ax;
     cy -= ay;
 
-    var bl = bx * bx + by * by;
-    var cl = cx * cx + cy * cy;
+    const bl = bx * bx + by * by;
+    const cl = cx * cx + cy * cy;
 
     if (bl === 0 || cl === 0) return Infinity;
 
-    var d = bx * cy - by * cx;
+    const d = bx * cy - by * cx;
     if (d === 0) return Infinity;
 
-    var x = (cy * bl - by * cl) * 0.5 / d;
-    var y = (bx * cl - cx * bl) * 0.5 / d;
+    const x = (cy * bl - by * cl) * 0.5 / d;
+    const y = (bx * cl - cx * bl) * 0.5 / d;
 
     return x * x + y * y;
 }
@@ -345,13 +342,13 @@ function circumcenter(ax, ay, bx, by, cx, cy) {
     cx -= ax;
     cy -= ay;
 
-    var bl = bx * bx + by * by;
-    var cl = cx * cx + cy * cy;
+    const bl = bx * bx + by * by;
+    const cl = cx * cx + cy * cy;
 
-    var d = bx * cy - by * cx;
+    const d = bx * cy - by * cx;
 
-    var x = (cy * bl - by * cl) * 0.5 / d;
-    var y = (bx * cl - cx * bl) * 0.5 / d;
+    const x = (cy * bl - by * cl) * 0.5 / d;
+    const y = (bx * cl - cx * bl) * 0.5 / d;
 
     return {
         x: ax + x,
@@ -361,7 +358,7 @@ function circumcenter(ax, ay, bx, by, cx, cy) {
 
 // create a new node in a doubly linked list
 function insertNode(coords, i, prev) {
-    var node = {
+    const node = {
         i: i,
         x: coords[2 * i],
         y: coords[2 * i + 1],
@@ -392,7 +389,7 @@ function removeNode(node) {
 }
 
 function quicksort(ids, coords, left, right, cx, cy) {
-    var i, j, temp;
+    let i, j, temp;
 
     if (right - left <= 20) {
         for (i = left + 1; i <= right; i++) {
@@ -402,7 +399,7 @@ function quicksort(ids, coords, left, right, cx, cy) {
             ids[j + 1] = temp;
         }
     } else {
-        var median = (left + right) >> 1;
+        const median = (left + right) >> 1;
         i = left + 1;
         j = right;
         swap(ids, median, i);
@@ -431,13 +428,13 @@ function quicksort(ids, coords, left, right, cx, cy) {
 }
 
 function compare(coords, i, j, cx, cy) {
-    var d1 = dist(coords[2 * i], coords[2 * i + 1], cx, cy);
-    var d2 = dist(coords[2 * j], coords[2 * j + 1], cx, cy);
+    const d1 = dist(coords[2 * i], coords[2 * i + 1], cx, cy);
+    const d2 = dist(coords[2 * j], coords[2 * j + 1], cx, cy);
     return (d1 - d2) || (coords[2 * i] - coords[2 * j]) || (coords[2 * i + 1] - coords[2 * j + 1]);
 }
 
 function swap(arr, i, j) {
-    var tmp = arr[i];
+    const tmp = arr[i];
     arr[i] = arr[j];
     arr[j] = tmp;
 }

@@ -37,6 +37,10 @@
     "extends": "mourner",
     "parserOptions": {
       "sourceType": "module"
+    },
+    "rules": {
+      "no-var": "error",
+      "prefer-const": "error"
     }
   },
   "keywords": [
