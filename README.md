@@ -13,9 +13,9 @@ A really fast JavaScript library for
 ## Example
 
 ```js
-var points = [[168, 180], [168, 178], [168, 179], [168, 181], [168, 183], ...];
+const points = [[168, 180], [168, 178], [168, 179], [168, 181], [168, 183], ...];
 
-var delaunay = Delaunator.from(points);
+const delaunay = Delaunator.from(points);
 console.log(delaunay.triangles);
 // [623, 636, 619,  636, 444, 619, ...]
 ```
@@ -60,7 +60,7 @@ All triangles are directed counterclockwise.
 To get the coordinates of all triangles, use:
 
 ```js
-for (var i = 0; i < triangles.length; i += 3) {
+for (let i = 0; i < triangles.length; i += 3) {
     coordinates.push([
         points[triangles[i]],
         points[triangles[i + 1]],
