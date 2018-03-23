@@ -2,16 +2,18 @@
   "name": "delaunator",
   "version": "1.0.5",
   "description": "A really fast JavaScript library for Delaunay triangulation of 2D points",
-  "main": "index.js",
-  "jsdelivr": "delaunator.js",
-  "unpkg": "delaunator.js",
+  "main": "delaunator.js",
+  "module": "index.js",
+  "jsdelivr": "delaunator.min.js",
+  "unpkg": "delaunator.min.js",
   "dependencies": {},
   "devDependencies": {
-    "browserify": "^14.5.0",
     "eslint": "^4.0.0",
     "eslint-config-mourner": "^2.0.1",
-    "tape": "^4.6.3",
-    "uglify-js": "^3.2.0"
+    "esm": "^3.0.8",
+    "rollup": "^0.57.1",
+    "rollup-plugin-uglify": "^3.0.0",
+    "tape": "^4.6.3"
   },
   "repository": {
     "type": "git",
@@ -19,18 +21,22 @@
   },
   "scripts": {
     "lint": "eslint index.js test.js bench.js",
-    "pretest": "npm run lint",
-    "test": "tape test.js",
-    "build": "browserify index.js -s Delaunator -o delaunator.js",
-    "build-min": "browserify index.js -s Delaunator | uglifyjs -c -m > delaunator.min.js",
-    "prepare": "npm run build && npm run build-min"
+    "pretest": "npm run lint && npm run build",
+    "test": "node test.js",
+    "bench": "node -r esm bench.js",
+    "build": "rollup -c",
+    "prepublishOnly": "npm test && npm run build"
   },
   "files": [
+    "index.js",
     "delaunator.js",
     "delaunator.min.js"
   ],
   "eslintConfig": {
-    "extends": "mourner"
+    "extends": "mourner",
+    "parserOptions": {
+      "sourceType": "module"
+    }
   },
   "keywords": [
     "delaunay triangulation",

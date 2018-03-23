@@ -1,6 +1,6 @@
-'use strict'; /* eslint no-new: 0, no-unused-vars: 0 */
+/* eslint no-unused-vars: 0 */
 
-var Delaunator = require('./');
+var Delaunator = require('./index.js').default;
 // var fasterDelaunay = require('faster-delaunay');
 // var incrementalDelaunay = require('incremental-delaunay');
 // var delaunayFast = require('delaunay-fast');

@@ -1,7 +1,3 @@
-'use strict';
-
-module.exports = Delaunator;
-module.exports.default = Delaunator;
 
 Delaunator.from = function (points, getX, getY) {
     if (!getX) getX = defaultGetX;
@@ -19,7 +15,7 @@ Delaunator.from = function (points, getX, getY) {
     return new Delaunator(coords);
 };
 
-function Delaunator(coords) {
+export default function Delaunator(coords) {
     if (!ArrayBuffer.isView(coords)) throw new Error('Expected coords to be a typed array.');
 
     var minX = Infinity;
