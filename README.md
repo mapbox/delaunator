@@ -35,6 +35,11 @@ Constructs a delaunay triangulation object given an array of points (`[x, y]` by
 `getX` and `getY` are optional functions of the form `(point) => value` for custom point formats.
 Duplicate points are skipped.
 
+#### new Delaunator(coords)
+
+Constructs a delaunay triangulation object given a **typed array** of point coordinates of the form:
+`[x0, y0, x1, y1, ...]`.
+
 #### delaunay.triangles
 
 A flat `Int32Array` array of triangle vertex indices (each group of three numbers forms a triangle).

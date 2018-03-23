@@ -20,12 +20,14 @@ Delaunator.from = function (points, getX, getY) {
 };
 
 function Delaunator(coords) {
+    if (!ArrayBuffer.isView(coords)) throw new Error('Expected coords to be a typed array.');
+
     var minX = Infinity;
     var minY = Infinity;
     var maxX = -Infinity;
     var maxY = -Infinity;
 
-    var n = coords.length / 2;
+    var n = coords.length >> 1;
     var ids = this.ids = new Uint32Array(n);
 
     this.coords = coords;

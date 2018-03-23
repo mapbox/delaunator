@@ -14,6 +14,14 @@ test('triangulates points', function (t) {
     t.end();
 });
 
+test('constructor errors on non-typed array', function (t) {
+    t.throws(function (t) {
+        var d = new Delaunator(points);
+        t.ok(d);
+    });
+    t.end();
+});
+
 test('produces properly connected halfedges', function (t) {
     testHalfedges(t, points);
 });
