@@ -18,8 +18,6 @@ export default class Delaunator {
     }
 
     constructor(coords) {
-        if (!ArrayBuffer.isView(coords)) throw new Error('Expected coords to be a typed array.');
-
         let minX = Infinity;
         let minY = Infinity;
         let maxX = -Infinity;
