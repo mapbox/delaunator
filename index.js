@@ -300,60 +300,52 @@ function area(px, py, qx, qy, rx, ry) {
 }
 
 function inCircle(ax, ay, bx, by, cx, cy, px, py) {
-    ax -= px;
-    ay -= py;
-    bx -= px;
-    by -= py;
-    cx -= px;
-    cy -= py;
+    const dx = ax - px;
+    const dy = ay - py;
+    const ex = bx - px;
+    const ey = by - py;
+    const fx = cx - px;
+    const fy = cy - py;
 
-    const ap = ax * ax + ay * ay;
-    const bp = bx * bx + by * by;
-    const cp = cx * cx + cy * cy;
+    const ap = dx * dx + dy * dy;
+    const bp = ex * ex + ey * ey;
+    const cp = fx * fx + fy * fy;
 
-    return ax * (by * cp - bp * cy) -
-           ay * (bx * cp - bp * cx) +
-           ap * (bx * cy - by * cx) < 0;
+    return dx * (ey * cp - bp * fy) -
+           dy * (ex * cp - bp * fx) +
+           ap * (ex * fy - ey * fx) < 0;
 }
 
 function circumradius(ax, ay, bx, by, cx, cy) {
-    bx -= ax;
-    by -= ay;
-    cx -= ax;
-    cy -= ay;
+    const dx = bx - ax;
+    const dy = by - ay;
+    const ex = cx - ax;
+    const ey = cy - ay;
 
-    const bl = bx * bx + by * by;
-    const cl = cx * cx + cy * cy;
+    const bl = dx * dx + dy * dy;
+    const cl = ex * ex + ey * ey;
+    const d = dx * ey - dy * ex;
 
-    if (bl === 0 || cl === 0) return Infinity;
+    const x = (ey * bl - dy * cl) * 0.5 / d;
+    const y = (dx * cl - ex * bl) * 0.5 / d;
 
-    const d = bx * cy - by * cx;
-    if (d === 0) return Infinity;
-
-    const x = (cy * bl - by * cl) * 0.5 / d;
-    const y = (bx * cl - cx * bl) * 0.5 / d;
-
-    return x * x + y * y;
+    return bl && cl && d && (x * x + y * y) || Infinity;
 }
 
 function circumcenter(ax, ay, bx, by, cx, cy) {
-    bx -= ax;
-    by -= ay;
-    cx -= ax;
-    cy -= ay;
+    const dx = bx - ax;
+    const dy = by - ay;
+    const ex = cx - ax;
+    const ey = cy - ay;
 
-    const bl = bx * bx + by * by;
-    const cl = cx * cx + cy * cy;
+    const bl = dx * dx + dy * dy;
+    const cl = ex * ex + ey * ey;
+    const d = dx * ey - dy * ex;
 
-    const d = bx * cy - by * cx;
+    const x = ax + (ey * bl - dy * cl) * 0.5 / d;
+    const y = ay + (dx * cl - ex * bl) * 0.5 / d;
 
-    const x = (cy * bl - by * cl) * 0.5 / d;
-    const y = (bx * cl - cx * bl) * 0.5 / d;
-
-    return {
-        x: ax + x,
-        y: ay + y
-    };
+    return {x, y};
 }
 
 // create a new node in a doubly linked list
