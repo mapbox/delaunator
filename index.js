@@ -1,233 +1,233 @@
 
-Delaunator.from = function (points, getX, getY) {
-    if (!getX) getX = defaultGetX;
-    if (!getY) getY = defaultGetY;
+export default class Delaunator {
 
-    var n = points.length;
-    var coords = new Float64Array(n * 2);
+    static from(points, getX, getY) {
+        if (!getX) getX = defaultGetX;
+        if (!getY) getY = defaultGetY;
 
-    for (var i = 0; i < n; i++) {
-        var p = points[i];
-        coords[2 * i] = getX(p);
-        coords[2 * i + 1] = getY(p);
-    }
+        var n = points.length;
+        var coords = new Float64Array(n * 2);
 
-    return new Delaunator(coords);
-};
-
-export default function Delaunator(coords) {
-    if (!ArrayBuffer.isView(coords)) throw new Error('Expected coords to be a typed array.');
-
-    var minX = Infinity;
-    var minY = Infinity;
-    var maxX = -Infinity;
-    var maxY = -Infinity;
-
-    var n = coords.length >> 1;
-    var ids = this.ids = new Uint32Array(n);
-
-    this.coords = coords;
-
-    for (var i = 0; i < n; i++) {
-        var x = coords[2 * i];
-        var y = coords[2 * i + 1];
-        if (x < minX) minX = x;
-        if (y < minY) minY = y;
-        if (x > maxX) maxX = x;
-        if (y > maxY) maxY = y;
-        ids[i] = i;
-    }
-
-    var cx = (minX + maxX) / 2;
-    var cy = (minY + maxY) / 2;
-
-    var minDist = Infinity;
-    var i0, i1, i2;
-
-    // pick a seed point close to the centroid
-    for (i = 0; i < n; i++) {
-        var d = dist(cx, cy, coords[2 * i], coords[2 * i + 1]);
-        if (d < minDist) {
-            i0 = i;
-            minDist = d;
+        for (var i = 0; i < n; i++) {
+            var p = points[i];
+            coords[2 * i] = getX(p);
+            coords[2 * i + 1] = getY(p);
         }
+
+        return new Delaunator(coords);
     }
 
-    minDist = Infinity;
+    constructor(coords) {
+        if (!ArrayBuffer.isView(coords)) throw new Error('Expected coords to be a typed array.');
 
-    // find the point closest to the seed
-    for (i = 0; i < n; i++) {
-        if (i === i0) continue;
-        d = dist(coords[2 * i0], coords[2 * i0 + 1], coords[2 * i], coords[2 * i + 1]);
-        if (d < minDist && d > 0) {
-            i1 = i;
-            minDist = d;
+        var minX = Infinity;
+        var minY = Infinity;
+        var maxX = -Infinity;
+        var maxY = -Infinity;
+
+        var n = coords.length >> 1;
+        var ids = this.ids = new Uint32Array(n);
+
+        this.coords = coords;
+
+        for (var i = 0; i < n; i++) {
+            var x = coords[2 * i];
+            var y = coords[2 * i + 1];
+            if (x < minX) minX = x;
+            if (y < minY) minY = y;
+            if (x > maxX) maxX = x;
+            if (y > maxY) maxY = y;
+            ids[i] = i;
         }
-    }
 
-    var minRadius = Infinity;
+        var cx = (minX + maxX) / 2;
+        var cy = (minY + maxY) / 2;
 
-    // find the third point which forms the smallest circumcircle with the first two
-    for (i = 0; i < n; i++) {
-        if (i === i0 || i === i1) continue;
+        var minDist = Infinity;
+        var i0, i1, i2;
 
-        var r = circumradius(
-            coords[2 * i0], coords[2 * i0 + 1],
+        // pick a seed point close to the centroid
+        for (i = 0; i < n; i++) {
+            var d = dist(cx, cy, coords[2 * i], coords[2 * i + 1]);
+            if (d < minDist) {
+                i0 = i;
+                minDist = d;
+            }
+        }
+
+        minDist = Infinity;
+
+        // find the point closest to the seed
+        for (i = 0; i < n; i++) {
+            if (i === i0) continue;
+            d = dist(coords[2 * i0], coords[2 * i0 + 1], coords[2 * i], coords[2 * i + 1]);
+            if (d < minDist && d > 0) {
+                i1 = i;
+                minDist = d;
+            }
+        }
+
+        var minRadius = Infinity;
+
+        // find the third point which forms the smallest circumcircle with the first two
+        for (i = 0; i < n; i++) {
+            if (i === i0 || i === i1) continue;
+
+            var r = circumradius(
+                coords[2 * i0], coords[2 * i0 + 1],
+                coords[2 * i1], coords[2 * i1 + 1],
+                coords[2 * i], coords[2 * i + 1]);
+
+            if (r < minRadius) {
+                i2 = i;
+                minRadius = r;
+            }
+        }
+
+        if (minRadius === Infinity) {
+            throw new Error('No Delaunay triangulation exists for this input.');
+        }
+
+        // swap the order of the seed points for counter-clockwise orientation
+        if (area(coords[2 * i0], coords[2 * i0 + 1],
             coords[2 * i1], coords[2 * i1 + 1],
-            coords[2 * i], coords[2 * i + 1]);
+            coords[2 * i2], coords[2 * i2 + 1]) < 0) {
 
-        if (r < minRadius) {
-            i2 = i;
-            minRadius = r;
-        }
-    }
-
-    if (minRadius === Infinity) {
-        throw new Error('No Delaunay triangulation exists for this input.');
-    }
-
-    // swap the order of the seed points for counter-clockwise orientation
-    if (area(coords[2 * i0], coords[2 * i0 + 1],
-        coords[2 * i1], coords[2 * i1 + 1],
-        coords[2 * i2], coords[2 * i2 + 1]) < 0) {
-
-        var tmp = i1;
-        i1 = i2;
-        i2 = tmp;
-    }
-
-    var i0x = coords[2 * i0];
-    var i0y = coords[2 * i0 + 1];
-    var i1x = coords[2 * i1];
-    var i1y = coords[2 * i1 + 1];
-    var i2x = coords[2 * i2];
-    var i2y = coords[2 * i2 + 1];
-
-    var center = circumcenter(i0x, i0y, i1x, i1y, i2x, i2y);
-    this._cx = center.x;
-    this._cy = center.y;
-
-    // sort the points by distance from the seed triangle circumcenter
-    quicksort(ids, coords, 0, ids.length - 1, center.x, center.y);
-
-    // initialize a hash table for storing edges of the advancing convex hull
-    this._hashSize = Math.ceil(Math.sqrt(n));
-    this._hash = [];
-    for (i = 0; i < this._hashSize; i++) this._hash[i] = null;
-
-    // initialize a circular doubly-linked list that will hold an advancing convex hull
-    var e = this.hull = insertNode(coords, i0);
-    this._hashEdge(e);
-    e.t = 0;
-    e = insertNode(coords, i1, e);
-    this._hashEdge(e);
-    e.t = 1;
-    e = insertNode(coords, i2, e);
-    this._hashEdge(e);
-    e.t = 2;
-
-    var maxTriangles = 2 * n - 5;
-    var triangles = this.triangles = new Uint32Array(maxTriangles * 3);
-    var halfedges = this.halfedges = new Int32Array(maxTriangles * 3);
-
-    this.trianglesLen = 0;
-
-    this._addTriangle(i0, i1, i2, -1, -1, -1);
-
-    var xp, yp;
-    for (var k = 0; k < ids.length; k++) {
-        i = ids[k];
-        x = coords[2 * i];
-        y = coords[2 * i + 1];
-
-        // skip duplicate points
-        if (x === xp && y === yp) continue;
-        xp = x;
-        yp = y;
-
-        // skip seed triangle points
-        if ((x === i0x && y === i0y) ||
-            (x === i1x && y === i1y) ||
-            (x === i2x && y === i2y)) continue;
-
-        // find a visible edge on the convex hull using edge hash
-        var startKey = this._hashKey(x, y);
-        var key = startKey;
-        var start;
-        do {
-            start = this._hash[key];
-            key = (key + 1) % this._hashSize;
-        } while ((!start || start.removed) && key !== startKey);
-
-        e = start;
-        while (area(x, y, e.x, e.y, e.next.x, e.next.y) >= 0) {
-            e = e.next;
-            if (e === start) {
-                throw new Error('Something is wrong with the input points.');
-            }
+            var tmp = i1;
+            i1 = i2;
+            i2 = tmp;
         }
 
-        var walkBack = e === start;
+        var i0x = coords[2 * i0];
+        var i0y = coords[2 * i0 + 1];
+        var i1x = coords[2 * i1];
+        var i1y = coords[2 * i1 + 1];
+        var i2x = coords[2 * i2];
+        var i2y = coords[2 * i2 + 1];
 
-        // add the first triangle from the point
-        var t = this._addTriangle(e.i, i, e.next.i, -1, -1, e.t);
+        var center = circumcenter(i0x, i0y, i1x, i1y, i2x, i2y);
+        this._cx = center.x;
+        this._cy = center.y;
 
-        e.t = t; // keep track of boundary triangles on the hull
-        e = insertNode(coords, i, e);
+        // sort the points by distance from the seed triangle circumcenter
+        quicksort(ids, coords, 0, ids.length - 1, center.x, center.y);
 
-        // recursively flip triangles from the point until they satisfy the Delaunay condition
-        e.t = this._legalize(t + 2);
-        if (e.prev.prev.t === halfedges[t + 1]) {
-            e.prev.prev.t = t + 2;
-        }
+        // initialize a hash table for storing edges of the advancing convex hull
+        this._hashSize = Math.ceil(Math.sqrt(n));
+        this._hash = [];
+        for (i = 0; i < this._hashSize; i++) this._hash[i] = null;
 
-        // walk forward through the hull, adding more triangles and flipping recursively
-        var q = e.next;
-        while (area(x, y, q.x, q.y, q.next.x, q.next.y) < 0) {
-            t = this._addTriangle(q.i, i, q.next.i, q.prev.t, -1, q.t);
-            q.prev.t = this._legalize(t + 2);
-            this.hull = removeNode(q);
-            q = q.next;
-        }
-
-        if (walkBack) {
-            // walk backward from the other side, adding more triangles and flipping
-            q = e.prev;
-            while (area(x, y, q.prev.x, q.prev.y, q.x, q.y) < 0) {
-                t = this._addTriangle(q.prev.i, i, q.i, -1, q.t, q.prev.t);
-                this._legalize(t + 2);
-                q.prev.t = t;
-                this.hull = removeNode(q);
-                q = q.prev;
-            }
-        }
-
-        // save the two new edges in the hash table
+        // initialize a circular doubly-linked list that will hold an advancing convex hull
+        var e = this.hull = insertNode(coords, i0);
         this._hashEdge(e);
-        this._hashEdge(e.prev);
+        e.t = 0;
+        e = insertNode(coords, i1, e);
+        this._hashEdge(e);
+        e.t = 1;
+        e = insertNode(coords, i2, e);
+        this._hashEdge(e);
+        e.t = 2;
+
+        var maxTriangles = 2 * n - 5;
+        var triangles = this.triangles = new Uint32Array(maxTriangles * 3);
+        var halfedges = this.halfedges = new Int32Array(maxTriangles * 3);
+
+        this.trianglesLen = 0;
+
+        this._addTriangle(i0, i1, i2, -1, -1, -1);
+
+        var xp, yp;
+        for (var k = 0; k < ids.length; k++) {
+            i = ids[k];
+            x = coords[2 * i];
+            y = coords[2 * i + 1];
+
+            // skip duplicate points
+            if (x === xp && y === yp) continue;
+            xp = x;
+            yp = y;
+
+            // skip seed triangle points
+            if ((x === i0x && y === i0y) ||
+                (x === i1x && y === i1y) ||
+                (x === i2x && y === i2y)) continue;
+
+            // find a visible edge on the convex hull using edge hash
+            var startKey = this._hashKey(x, y);
+            var key = startKey;
+            var start;
+            do {
+                start = this._hash[key];
+                key = (key + 1) % this._hashSize;
+            } while ((!start || start.removed) && key !== startKey);
+
+            e = start;
+            while (area(x, y, e.x, e.y, e.next.x, e.next.y) >= 0) {
+                e = e.next;
+                if (e === start) {
+                    throw new Error('Something is wrong with the input points.');
+                }
+            }
+
+            var walkBack = e === start;
+
+            // add the first triangle from the point
+            var t = this._addTriangle(e.i, i, e.next.i, -1, -1, e.t);
+
+            e.t = t; // keep track of boundary triangles on the hull
+            e = insertNode(coords, i, e);
+
+            // recursively flip triangles from the point until they satisfy the Delaunay condition
+            e.t = this._legalize(t + 2);
+            if (e.prev.prev.t === halfedges[t + 1]) {
+                e.prev.prev.t = t + 2;
+            }
+
+            // walk forward through the hull, adding more triangles and flipping recursively
+            var q = e.next;
+            while (area(x, y, q.x, q.y, q.next.x, q.next.y) < 0) {
+                t = this._addTriangle(q.i, i, q.next.i, q.prev.t, -1, q.t);
+                q.prev.t = this._legalize(t + 2);
+                this.hull = removeNode(q);
+                q = q.next;
+            }
+
+            if (walkBack) {
+                // walk backward from the other side, adding more triangles and flipping
+                q = e.prev;
+                while (area(x, y, q.prev.x, q.prev.y, q.x, q.y) < 0) {
+                    t = this._addTriangle(q.prev.i, i, q.i, -1, q.t, q.prev.t);
+                    this._legalize(t + 2);
+                    q.prev.t = t;
+                    this.hull = removeNode(q);
+                    q = q.prev;
+                }
+            }
+
+            // save the two new edges in the hash table
+            this._hashEdge(e);
+            this._hashEdge(e.prev);
+        }
+
+        // trim typed triangle mesh arrays
+        this.triangles = triangles.subarray(0, this.trianglesLen);
+        this.halfedges = halfedges.subarray(0, this.trianglesLen);
     }
 
-    // trim typed triangle mesh arrays
-    this.triangles = triangles.subarray(0, this.trianglesLen);
-    this.halfedges = halfedges.subarray(0, this.trianglesLen);
-}
-
-Delaunator.prototype = {
-
-    _hashEdge: function (e) {
+    _hashEdge(e) {
         this._hash[this._hashKey(e.x, e.y)] = e;
-    },
+    }
 
-    _hashKey: function (x, y) {
+    _hashKey(x, y) {
         var dx = x - this._cx;
         var dy = y - this._cy;
         // use pseudo-angle: a measure that monotonically increases
         // with real angle, but doesn't require expensive trigonometry
         var p = 1 - dx / (Math.abs(dx) + Math.abs(dy));
         return Math.floor((2 + (dy < 0 ? -p : p)) / 4 * this._hashSize);
-    },
+    }
 
-    _legalize: function (a) {
+    _legalize(a) {
         var triangles = this.triangles;
         var coords = this.coords;
         var halfedges = this.halfedges;
@@ -267,15 +267,15 @@ Delaunator.prototype = {
         }
 
         return ar;
-    },
+    }
 
-    _link: function (a, b) {
+    _link(a, b) {
         this.halfedges[a] = b;
         if (b !== -1) this.halfedges[b] = a;
-    },
+    }
 
     // add a new triangle given vertex indices and adjacent half-edge ids
-    _addTriangle: function (i0, i1, i2, a, b, c) {
+    _addTriangle(i0, i1, i2, a, b, c) {
         var t = this.trianglesLen;
 
         this.triangles[t] = i0;
@@ -290,7 +290,7 @@ Delaunator.prototype = {
 
         return t;
     }
-};
+}
 
 function dist(ax, ay, bx, by) {
     var dx = ax - bx;

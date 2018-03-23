@@ -12,6 +12,7 @@
     "eslint-config-mourner": "^2.0.1",
     "esm": "^3.0.8",
     "rollup": "^0.57.1",
+    "rollup-plugin-buble": "^0.19.2",
     "rollup-plugin-uglify": "^3.0.0",
     "tape": "^4.6.3"
   },
@@ -20,7 +21,7 @@
     "url": "https://github.com/mapbox/delaunator.git"
   },
   "scripts": {
-    "lint": "eslint index.js test.js bench.js",
+    "lint": "eslint index.js test.js bench.js rollup.config.js",
     "pretest": "npm run lint && npm run build",
     "test": "node test.js",
     "bench": "node -r esm bench.js",

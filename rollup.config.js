@@ -1,4 +1,5 @@
-import uglify from 'rollup-plugin-uglify'
+import uglify from 'rollup-plugin-uglify';
+import buble from 'rollup-plugin-buble';
 
 const config = (file, plugins) => ({
     input: 'index.js',
@@ -11,6 +12,6 @@ const config = (file, plugins) => ({
 });
 
 export default [
-    config('delaunator.js', []),
-    config('delaunator.min.js', [uglify()])
+    config('delaunator.js', [buble()]),
+    config('delaunator.min.js', [buble(), uglify()])
 ];
