@@ -26,6 +26,8 @@ export default class Delaunator {
         const n = coords.length >> 1;
         const ids = this.ids = new Uint32Array(n);
 
+        if (n > 0 && typeof coords[0] !== 'number') throw new Error('Expected coords to contain numbers.');
+
         this.coords = coords;
 
         for (let i = 0; i < n; i++) {

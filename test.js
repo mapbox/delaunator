@@ -26,10 +26,12 @@ test('triangulates typed array', function (t) {
 });
 
 test('constructor errors on invalid array', function (t) {
-    t.throws(function (t) {
-        const d = new Delaunator({length: -1});
-        t.ok(d);
-    });
+    t.throws(function () {
+        new Delaunator({length: -1});
+    }, /Invalid typed array length/);
+    t.throws(function () {
+        new Delaunator(points);
+    }, /Expected coords to contain numbers/);
     t.end();
 });
 
