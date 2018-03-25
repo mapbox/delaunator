@@ -18,8 +18,6 @@ export default class Delaunator {
     }
 
     constructor(coords) {
-        if (!ArrayBuffer.isView(coords)) throw new Error('Expected coords to be a typed array.');
-
         let minX = Infinity;
         let minY = Infinity;
         let maxX = -Infinity;
@@ -27,6 +25,8 @@ export default class Delaunator {
 
         const n = coords.length >> 1;
         const ids = this.ids = new Uint32Array(n);
+
+        if (n > 0 && typeof coords[0] !== 'number') throw new Error('Expected coords to contain numbers.');
 
         this.coords = coords;
 

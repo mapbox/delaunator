@@ -13,11 +13,25 @@ test('triangulates points', function (t) {
     t.end();
 });
 
-test('constructor errors on non-typed array', function (t) {
-    t.throws(function (t) {
-        const d = new Delaunator(points);
-        t.ok(d);
-    });
+test('triangulates plain array', function (t) {
+    const d = new Delaunator([].concat.apply([], points));
+    t.same(Array.from(d.triangles), triangles);
+    t.end();
+});
+
+test('triangulates typed array', function (t) {
+    const d = new Delaunator(Float64Array.from([].concat.apply([], points)));
+    t.same(Array.from(d.triangles), triangles);
+    t.end();
+});
+
+test('constructor errors on invalid array', function (t) {
+    t.throws(function () {
+        new Delaunator({length: -1});
+    }, /Invalid typed array length/);
+    t.throws(function () {
+        new Delaunator(points);
+    }, /Expected coords to contain numbers/);
     t.end();
 });
 
