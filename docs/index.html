@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Delaunator guide</title>
+    <meta name="viewport" content="width=640">
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            --serif: Cambria,Georgia,serif;
+            --sans-serif: system-ui,"Segoe UI",Roboto,Oxygen-Sans,Ubuntu,Cantarell,"Helvetica Neue",sans-serif;
+            --monospace: "Roboto Mono","Consolas",monospace,"Segoe UI Symbol","Symbol";
+            --background-diagram: hsl(60,10%,85%);
+            --background-samples: hsl(60,10%,90%);
+            font-family: var(--serif);
+            font-size: 16px;
+            line-height: 1.5em;
+        }
+
+        h1, h2, h3, h4, h5, h6, header, footer, figcaption {
+            font-family: var(--sans-serif);
+        }
+
+        code, tt, kbd, pre, script {
+            font-family: var(--monospace);
+            font-size: 15px;
+        }
+
+        body > * {
+            margin-left: auto;
+            margin-right: auto;
+            max-width: 60rem;
+        }
+
+        pre, script:not([src]) { 
+            line-height: 1.5;
+            display: block; 
+            white-space: pre;
+            overflow-x: auto;
+            padding: 0 1em 0 1em;
+            background: var(--background-samples);
+        }
+
+        svg:not(.plain) {
+            background: var(--background-diagram);
+            max-width: 100%
+        }
+        pre, script, svg:not(.plain) {
+            border: 1px solid hsl(60,20%,70%);
+            box-shadow: inset 0 1px 5px 0px rgba(0,0,0,0.3);
+            border-radius: 4px;
+        }
+
+        figure {
+            font-size: small;
+            text-align: center;
+        }
+        .seed-points { fill: hsl(0,50%,50%); stroke: var(--background); stroke-width: 1px; }
+        .vertices { fill: hsl(240,50%,50%); stroke: white; stroke-width: 1px; }
+        .edges { fill: none; stroke: black; stroke-width: 1.5px; }
+        .arrowhead { marker-end: url(#arrowhead-black); }
+        figure#diagram-halfedges .edges { stroke-width: 0.75px; }
+        figure#diagram-voronoi .edges, figure#diagram-triangles .edges { stroke: white; stroke-opacity: 0.1; }
+        .highlight .edges { stroke-width: 7.0; stroke: hsl(0,50%,80%); marker-end: unset; }
+
+    </style>
+  </head>
+
+  <body>
+    
+    <h1>Delaunator guide</h1>
+    
+    <p>
+      <a href="https://github.com/mapbox/delaunator">Delaunator</a> is a fast library for Delaunay triangulation. See an interactive <a href="demo.html">demo</a>. It takes as input a set of points:
+    </p>
+    
+    <figure id="diagram-points"></figure>
+    
+    <p>
+      and produces as output a triangulation:
+    </p>
+    
+    <p>
+      <figure id="diagram-delaunay"></figure>
+    </p>
+    
+    <p>
+      The triangulation is represented as compact arrays of integers. It’s less convenient than other representations but is the reason the library is fast.
+    </p>
+
+    <h2>Delaunay triangles</h2>
+    
+    <p>
+      After constructing a <code>delaunay = Delaunator.from(points)</code> object, it will have a <code>triangles</code> array and a <code>halfedges</code> array, both indexed by half-edge id. What’s a half-edge?
+    </p>
+
+    <figure id="diagram-halfedges"></figure>
+
+    <p>
+      A triangle edge may be shared with another triangle. Instead of thinking about each edge A↔︎B, we will use two <em>half-edges</em> A→B and B→A. Having two half-edges is the key to everything this library provides.
+    </p>
+
+    <p>
+      Half-edges <em>e</em> are the indices into both of delaunator’s outputs:
+    </p>
+
+    <ul>
+      <li><code>delaunay.triangles[e]</code> returns the point id where the half-edge starts</li>
+      <li><code>delaunay.halfedges[e]</code> returns the opposite half-edge in the adjacent triangle, or -1 if there is no adjacent triangle</li>
+    </ul>
+    
+    <p>
+      Triangle ids and half-edge ids are related. 
+    </p>
+
+    <ul>
+      <li>The half-edges of triangle <em>t</em> are <code>3*t</code>, <code>3*t + 1</code>, and <code>3*t + 2</code>. </li>
+      <li>The triangle of half-edge id <em>e</em> is <code>floor(e/3)</code>.</li>
+    </ul>
+    
+    <p>
+      Let’s use some helper functions for these:
+    </p>
+
+    <script>
+function triangleIdToEdgeIds(t) { return [3*t, 3*t+1, 3*t+2]; }
+function edgeIdToTriangleId(e)  { return Math.floor(e/3); }
+    </script>
+
+    <p>
+      It will also be useful to have some helper functions to go from one half-edge to the next and previous half-edges in the same triangle:
+    </p>
+
+    <script>
+function nextHalfedge(e) { return (e % 3 == 2) ? e-2 : e+1; }
+function prevHalfedge(e) { return (e % 3 == 0) ? e+2 : e-1; }
+    </script>
+    
+    <p>
+      Note: the sample code on this page is written for readability, not performance.
+    </p>
+    
+    <h3>Delaunay edges</h3>
+    
+    <p>
+      We can draw all the triangle edges without constructing the triangles themselves. Each edge is two half-edges. A half-edge <em>e</em> starts at <code>points[delaunay.triangles[e]]</code>. Its opposite <code>delaunay.halfedges[e]</code> starts at the other end, so that tells us the two endpoints of the edge. However, the half-edges along the convex hull won’t have an opposite, so <code>delaunay.halfedges[e]</code> will be -1, and <code>points[delaunay.halfedges[e]]</code> will fail. To reliably find the other end of the edge, we need to instead use <code>points[nextHalfedge(e)]</code>. We can loop through the half-edges and pick half of them to draw:
+    </p>
+    
+    <script>
+function forEachTriangleEdge(points, delaunay, callback) {
+    for (let e = 0; e < delaunay.triangles.length; e++) {
+        if (e > delaunay.halfedges[e]) {
+            let p = points[delaunay.triangles[e]];
+            let q = points[delaunay.triangles[nextHalfedge(e)]];
+            callback(e, p, q);
+        }
+    }
+}
+    </script>
+    
+    <figure id="diagram-delaunay-edges"></figure>
+    
+    <h3>Constructing triangles</h3>
+    
+    <p>
+      A triangle is formed from three consecutive half-edges, <code>3*t</code>, <code>3*t + 1</code>, <code>3*t + 2</code>. Each half-edge <em>e</em> starts at <code>points[e]</code>, so we can connect those three points into a triangle.
+    </p>
+    
+    <script>
+function triangleIdToEdgeIds(t) { return [3*t, 3*t+1, 3*t+2]; }
+
+function pointsOfTriangle(points, delaunay, t) {
+    return triangleIdToEdgeIds(t)
+           .map(e => points[delaunay.triangles[e]]);
+}
+
+function forEachTriangle(points, delaunay, callback) {
+    for (let t = 0; t < delaunay.triangles.length / 3; t++) {
+        callback(t, pointsOfTriangle(points, delaunay, t));
+    }
+}
+    </script>
+    
+    <figure id="diagram-triangles"></figure>
+    
+    <h3>Adjacent triangles</h3>
+    
+    <p>
+      We can also use the half-edges of a triangle to find the adjacent triangles. Each half-edge's opposite will be in an adjacent triangle, and the <code>edgeIdToTriangleId</code> helper function will tell us which triangle a half-edge is in:
+    </p>
+
+    <script>
+function edgeIdToTriangleId(e)  { return Math.floor(e/3); }
+
+function trianglesAdjacentToTriangle(delaunay, t) {
+    let adjacentTriangles = [];
+    for (let e of triangleIdToEdgeIds(t)) {
+        let opposite = delaunay.halfedges[e];
+        if (opposite >= 0) {
+            adjacentTriangles.push(edgeIdToTriangleId(opposite));
+        }
+    }
+    return adjacentTriangles;
+}
+    </script>
+    
+    <h2>Voronoi cells</h2>
+    
+    <p>
+      A <a href="https://en.wikipedia.org/wiki/Voronoi_diagram">Voronoi diagram</a> is built by connecting the Delaunay triangle circumcenters together using the <em>dual</em> of the Delaunay graph.
+    </p>
+
+    <ol>
+      <li>Calculate the circumcenters of each triangle</li>
+      <li>Construct the Voronoi edges from two circumcenters</li>
+      <li>Connect the edges into Voronoi cells</li>
+    </ol>
+    
+    <h3>Triangle circumcenters</h3>
+    
+    <p>
+      The formula for circumcenters can be found <a href="https://en.wikipedia.org/wiki/Circumscribed_circle#Circumcenter_coordinates">on Wikipedia</a>. The circumcenter is often but not always inside the triangle.
+    </p>
+
+    <script>
+function circumcenter(a, b, c) {
+    let ad = a[0]*a[0] + a[1]*a[1],
+        bd = b[0]*b[0] + b[1]*b[1],
+        cd = c[0]*c[0] + c[1]*c[1];
+    let D = 2 * (a[0] * (b[1] - c[1]) + b[0] * (c[1] - a[1]) + c[0] * (a[1] - b[1]));
+    return [
+      1/D * (ad * (b[1] - c[1]) + bd * (c[1] - a[1]) + cd * (a[1] - b[1])),
+      1/D * (ad * (c[0] - b[0]) + bd * (a[0] - c[0]) + cd * (b[0] - a[0])),
+    ];
+}
+    </script>
+
+    <figure id="diagram-circumcenters"></figure>
+
+    <p>
+      This convenience function will go from triangle id to circumcenter:
+    </p>
+    
+    <script>
+function triangleCenter(points, delaunay, t) {
+  let vertices = pointsOfTriangle(points, delaunay, t);
+  return circumcenter(vertices[0], vertices[1], vertices[2]);
+}
+    </script>
+
+    <h3>Voronoi edges</h3>
+    
+    <p>
+      With the circumcenters we can draw the Voronoi edges without constructing the polygons. <em>Each Delaunay triangle half-edge corresponds to one Voronoi polygon half-edge</em>. The Delaunay half-edge connects two points, <code>delaunay.triangles[e]</code> and <code>delaunay.triangles[nextHalfedge(e)]</code>. The Voronoi half-edge connects the circumcenters of two triangles, <code>edgeIdToTriangleId(e)</code> and <code>edgeIdToTriangleId(delaunay.halfedges[e])</code>. We can iterate over the half-edges and construct the line segments:
+    </p>
+
+    <script>
+function forEachVoronoiEdge(points, delaunay, callback) {
+    for (let e = 0; e < delaunay.triangles.length; e++) {
+        if (e < delaunay.halfedges[e]) {
+            let p = triangleCenter(points, delaunay, edgeIdToTriangleId(e));
+            let q = triangleCenter(points, delaunay, edgeIdToTriangleId(delaunay.halfedges[e]));
+            callback(e, p, q);
+        }
+    }
+}
+    </script>
+
+    <figure id="diagram-voronoi-edges"></figure>
+
+    <h3>Constructing Voronoi cells</h3>
+    
+    <p>
+      To build the polygons, we need to find the <em>triangles touching a point</em>. The half-edge structures can give us what we need. Let’s assume we have a starting half-edge that leads into the point. We can alternate two steps to loop around:
+    </p>
+
+    <ol>
+      <li>Use <code>nextHalfedge(e)</code> to go to the next outgoing half-edge in the <em>current</em> triangle</li>
+      <li>Use <code>halfedges[e]</code> to go to the incoming half-edge in the <em>adjacent</em> triangle</li>
+    </ol>
+    
+    <figure id="diagram-circulate"></figure>
+
+    <script>
+function cellEdgeIds(delaunay, start) {
+    let result = [];
+    let incoming = start;
+    do {
+        result.push(incoming);
+        let outgoing = nextHalfedge(incoming);
+        incoming = delaunay.halfedges[outgoing];
+    } while (incoming !== -1 && incoming !== start);
+    return result;
+}
+    </script>
+    
+    <h3>Drawing Voronoi cells</h3>
+    
+    <p>
+      To draw the Voronoi cells, we can turn a point’s incoming half-edges into triangles, and then find their circumcenters. We can iterate over half-edges, but since many half-edges lead to a point, we need to keep track of which points have already been visited.
+    </p>
+    
+    <script>
+function forEachVoronoiCell(points, delaunay, callback) {
+    let seen = new Set();  // of point ids
+    for (let e = 0; e < delaunay.triangles.length; e++) {
+        let p = delaunay.triangles[nextHalfedge(e)];
+        if (!seen.has(p)) {
+            seen.add(p);
+            let edges = cellEdgeIds(delaunay, e);
+            let triangles = edges.map(edgeIdToTriangleId);
+            let vertices = triangles.map(t => triangleCenter(points, delaunay, t));
+            callback(p, vertices);
+        }
+    }
+}
+    </script>
+
+    <figure id="diagram-voronoi"></figure>
+
+    <h3>Convex hull</h3>
+    
+    <p>
+      There’s a problem with the <code>cellEdgeIds</code> loop above. Points on the convex hull won’t be completely surrounded by triangles, and the loop will stop partway through, when it hits -1. There are three approaches to this:
+    </p>
+    
+    <ol>
+      <li>Ignore it. Make sure never to circulate around points on the convex hull.</li>
+      <li>Change the code.<ul>
+        <li>Check for -1 in all code that looks at <code>halfedges</code>.</li>
+        <li>Change the <code>cellEdgeIds</code> loop to start at the “leftmost” half-edge so that by the time it reaches -1, it has gone through all the triangles.</li>
+      </ul>
+      </li>
+      <li>Change the data. Remove the convex hull by wrapping the mesh around the &#8220;back&#8221;. There will no longer be any -1 <code>halfedges</code>.<ul>
+        <li>Add &#8220;ghost&#8221; half-edges that pair up with the ones that point to -1.</li>
+        <li>Add a single ghost point at &#8220;infinity&#8221; that represents the &#8220;back side&#8221; of the triangulation.</li>
+        <li>Add ghost triangles to connect these ghost half-edges to the ghost point.</li>
+      </ul>
+      </li>
+    </ol>
+
+    <p>
+      Here’s an example of how to find the “leftmost” half-edge:
+    </p>
+
+    <script>
+function forEachVoronoiCell(points, delaunay, callback) {
+    let index = new Map(); // point id to half-edge id
+    for (let e = 0; e < delaunay.triangles.length; e++) {
+        let endpoint = delaunay.triangles[nextHalfedge(e)];
+        if (!index.has(endpoint) || delaunay.halfedges[e] === -1) {
+            index.set(endpoint, e);
+        }
+    }
+    for (let p = 0; p < points.length; p++) {
+        let incoming = index.get(p);
+        let edges = cellEdgeIds(delaunay, incoming);
+        let triangles = edges.map(edgeIdToTriangleId);
+        let vertices = triangles.map(t => triangleCenter(points, delaunay, t));
+        callback(p, vertices);
+    }
+}
+    </script>
+
+    <p>
+      However, even with these changes, constructing the Voronoi cell along the convex hull requires projecting the edges outwards and clipping them. The Delaunator library doesn’t provide this functionality; consider using <a href="https://github.com/d3/d3-delaunay">d3-delaunay</a> if you need it.
+    </p>
+    
+    <h2>About this page</h2>
+
+    <p>
+      The code shown on this page is also <em>running</em> on the page, to produce the diagrams. By default the <code>&lt;script&gt;</code> tags on the page are hidden, but on this page they are made visible with CSS: <code>script { display: block }</code>.
+    </p>
+    
+    
+    <footer>
+      <svg class="plain" width="1" height="1">
+        <defs>
+          <marker id="arrowhead-black" viewBox="0 0 10 10" refX="8" refY="5" markerUnits="strokeWidth" markerWidth="8" markerHeight="5" orient="auto">
+            <path d="M 0 0 L 10 5 L 0 10 z" fill="black"/>
+          </marker>
+        </defs>
+      </svg>
+      <script src="https://unpkg.com/delaunator@2.0.0/delaunator.min.js"></script>
+      <script src="diagrams.js"></script>
+    </footer>
+    
+  </body>
+</html>
