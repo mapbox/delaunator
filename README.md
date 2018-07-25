@@ -3,11 +3,12 @@
 A really fast JavaScript library for
 [Delaunay triangulation](https://en.wikipedia.org/wiki/Delaunay_triangulation) of 2D points.
 
+- [Interactive Demo](https://mapbox.github.io/delaunator/demo.html)
+- [Guide to data structures](https://mapbox.github.io/delaunator/)
+
 [![Build Status](https://travis-ci.org/mapbox/delaunator.svg?branch=master)](https://travis-ci.org/mapbox/delaunator)
 [![](https://img.shields.io/badge/simply-awesome-brightgreen.svg)](https://github.com/mourner/projects)
 
-
-## [Interactive Demo](https://mapbox.github.io/delaunator/)
 
 
 ## Example
