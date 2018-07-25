@@ -74,7 +74,7 @@
     <h1>Delaunator guide</h1>
     
     <p>
-      <a href="https://github.com/mapbox/delaunator">Delaunator</a> is a fast library for Delaunay triangulation. See an interactive <a href="demo.html">demo</a>. It takes as input a set of points:
+      <a href="https://github.com/mapbox/delaunator">Delaunator</a> is a fast library for Delaunay triangulation. It takes as input a set of points:
     </p>
     
     <figure id="diagram-points"></figure>
@@ -135,8 +135,8 @@ function edgeIdToTriangleId(e)  { return Math.floor(e/3); }
     </p>
 
     <script>
-function nextHalfedge(e) { return (e % 3 == 2) ? e-2 : e+1; }
-function prevHalfedge(e) { return (e % 3 == 0) ? e+2 : e-1; }
+function nextHalfedge(e) { return (e % 3 === 2) ? e-2 : e+1; }
+function prevHalfedge(e) { return (e % 3 === 0) ? e+2 : e-1; }
     </script>
     
     <p>
