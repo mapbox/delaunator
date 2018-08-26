@@ -108,15 +108,15 @@
     </p>
 
     <ul>
-      <li><code>delaunay.triangles[e]</code> returns the point id where the half-edge starts</li>
-      <li><code>delaunay.halfedges[e]</code> returns the opposite half-edge in the adjacent triangle, or -1 if there is no adjacent triangle</li>
+      <li id="edge-to-points"><code>delaunay.triangles[e]</code> returns the point id where the half-edge starts</li>
+      <li id="edge-to-opposite"><code>delaunay.halfedges[e]</code> returns the opposite half-edge in the adjacent triangle, or -1 if there is no adjacent triangle</li>
     </ul>
     
     <p>
       Triangle ids and half-edge ids are related. 
     </p>
 
-    <ul>
+    <ul id="edge-and-triangle">
       <li>The half-edges of triangle <em>t</em> are <code>3*t</code>, <code>3*t + 1</code>, and <code>3*t + 2</code>. </li>
       <li>The triangle of half-edge id <em>e</em> is <code>floor(e/3)</code>.</li>
     </ul>
@@ -126,15 +126,15 @@
     </p>
 
     <script>
-function triangleIdToEdgeIds(t) { return [3*t, 3*t+1, 3*t+2]; }
-function edgeIdToTriangleId(e)  { return Math.floor(e/3); }
+function edgesOfTriangle(t) { return [3*t, 3*t+1, 3*t+2]; }
+function triangleOfEdge(e)  { return Math.floor(e/3); }
     </script>
 
     <p>
       It will also be useful to have some helper functions to go from one half-edge to the next and previous half-edges in the same triangle:
     </p>
 
-    <script>
+    <script id="edges-to-edges">
 function nextHalfedge(e) { return (e % 3 === 2) ? e-2 : e+1; }
 function prevHalfedge(e) { return (e % 3 === 0) ? e+2 : e-1; }
     </script>
@@ -162,18 +162,18 @@ function forEachTriangleEdge(points, delaunay, callback) {
     </script>
     
     <figure id="diagram-delaunay-edges"></figure>
-    
+
     <h3>Constructing triangles</h3>
     
     <p>
       A triangle is formed from three consecutive half-edges, <code>3*t</code>, <code>3*t + 1</code>, <code>3*t + 2</code>. Each half-edge <em>e</em> starts at <code>points[e]</code>, so we can connect those three points into a triangle.
     </p>
     
-    <script>
-function triangleIdToEdgeIds(t) { return [3*t, 3*t+1, 3*t+2]; }
+    <script id="triangle-to-points">
+function edgesOfTriangle(t) { return [3*t, 3*t+1, 3*t+2]; }
 
 function pointsOfTriangle(points, delaunay, t) {
-    return triangleIdToEdgeIds(t)
+    return edgesOfTriangle(t)
            .map(e => points[delaunay.triangles[e]]);
 }
 
@@ -192,15 +192,15 @@ function forEachTriangle(points, delaunay, callback) {
       We can also use the half-edges of a triangle to find the adjacent triangles. Each half-edge's opposite will be in an adjacent triangle, and the <code>edgeIdToTriangleId</code> helper function will tell us which triangle a half-edge is in:
     </p>
 
-    <script>
-function edgeIdToTriangleId(e)  { return Math.floor(e/3); }
+    <script id="triangle-to-triangles">
+function triangleOfEdge(e)  { return Math.floor(e/3); }
 
 function trianglesAdjacentToTriangle(delaunay, t) {
     let adjacentTriangles = [];
-    for (let e of triangleIdToEdgeIds(t)) {
+    for (let e of edgesOfTriangle(t)) {
         let opposite = delaunay.halfedges[e];
         if (opposite >= 0) {
-            adjacentTriangles.push(edgeIdToTriangleId(opposite));
+            adjacentTriangles.push(triangleOfEdge(opposite));
         }
     }
     return adjacentTriangles;
@@ -254,15 +254,15 @@ function triangleCenter(points, delaunay, t) {
     <h3>Voronoi edges</h3>
     
     <p>
-      With the circumcenters we can draw the Voronoi edges without constructing the polygons. <em>Each Delaunay triangle half-edge corresponds to one Voronoi polygon half-edge</em>. The Delaunay half-edge connects two points, <code>delaunay.triangles[e]</code> and <code>delaunay.triangles[nextHalfedge(e)]</code>. The Voronoi half-edge connects the circumcenters of two triangles, <code>edgeIdToTriangleId(e)</code> and <code>edgeIdToTriangleId(delaunay.halfedges[e])</code>. We can iterate over the half-edges and construct the line segments:
+      With the circumcenters we can draw the Voronoi edges without constructing the polygons. <em>Each Delaunay triangle half-edge corresponds to one Voronoi polygon half-edge</em>. The Delaunay half-edge connects two points, <code>delaunay.triangles[e]</code> and <code>delaunay.triangles[nextHalfedge(e)]</code>. The Voronoi half-edge connects the circumcenters of two triangles, <code>triangleOfEdge(e)</code> and <code>triangleOfEdge(delaunay.halfedges[e])</code>. We can iterate over the half-edges and construct the line segments:
     </p>
 
     <script>
 function forEachVoronoiEdge(points, delaunay, callback) {
     for (let e = 0; e < delaunay.triangles.length; e++) {
         if (e < delaunay.halfedges[e]) {
-            let p = triangleCenter(points, delaunay, edgeIdToTriangleId(e));
-            let q = triangleCenter(points, delaunay, edgeIdToTriangleId(delaunay.halfedges[e]));
+            let p = triangleCenter(points, delaunay, triangleOfEdge(e));
+            let q = triangleCenter(points, delaunay, triangleOfEdge(delaunay.halfedges[e]));
             callback(e, p, q);
         }
     }
@@ -273,7 +273,7 @@ function forEachVoronoiEdge(points, delaunay, callback) {
 
     <h3>Constructing Voronoi cells</h3>
     
-    <p>
+    <p id="point-to-edges">
       To build the polygons, we need to find the <em>triangles touching a point</em>. The half-edge structures can give us what we need. Let’s assume we have a starting half-edge that leads into the point. We can alternate two steps to loop around:
     </p>
 
@@ -285,7 +285,7 @@ function forEachVoronoiEdge(points, delaunay, callback) {
     <figure id="diagram-circulate"></figure>
 
     <script>
-function cellEdgeIds(delaunay, start) {
+function edgesAroundPoint(delaunay, start) {
     let result = [];
     let incoming = start;
     do {
@@ -296,6 +296,10 @@ function cellEdgeIds(delaunay, start) {
     return result;
 }
     </script>
+
+    <p>
+      Note that this requires any incoming half-edge that leads to the point. If you need a quick way to find such a half-edge given a point, it can be useful to build an index of these half-edges. For an example, see the <a href="#incoming-edge-index">modified version of <code>forEachVoronoiCell</code></a> at the end of the page.
+    </p>
     
     <h3>Drawing Voronoi cells</h3>
     
@@ -310,8 +314,8 @@ function forEachVoronoiCell(points, delaunay, callback) {
         let p = delaunay.triangles[nextHalfedge(e)];
         if (!seen.has(p)) {
             seen.add(p);
-            let edges = cellEdgeIds(delaunay, e);
-            let triangles = edges.map(edgeIdToTriangleId);
+            let edges = edgesAroundPoint(delaunay, e);
+            let triangles = edges.map(triangleOfEdge);
             let vertices = triangles.map(t => triangleCenter(points, delaunay, t));
             callback(p, vertices);
         }
@@ -324,14 +328,14 @@ function forEachVoronoiCell(points, delaunay, callback) {
     <h3>Convex hull</h3>
     
     <p>
-      There’s a problem with the <code>cellEdgeIds</code> loop above. Points on the convex hull won’t be completely surrounded by triangles, and the loop will stop partway through, when it hits -1. There are three approaches to this:
+      There’s a problem with the <code>edgesAroundPoint</code> loop above. Points on the convex hull won’t be completely surrounded by triangles, and the loop will stop partway through, when it hits -1. There are three approaches to this:
     </p>
     
     <ol>
       <li>Ignore it. Make sure never to circulate around points on the convex hull.</li>
       <li>Change the code.<ul>
         <li>Check for -1 in all code that looks at <code>halfedges</code>.</li>
-        <li>Change the <code>cellEdgeIds</code> loop to start at the “leftmost” half-edge so that by the time it reaches -1, it has gone through all the triangles.</li>
+        <li>Change the <code>edgesAroundPoint</code> loop to start at the “leftmost” half-edge so that by the time it reaches -1, it has gone through all the triangles.</li>
       </ul>
       </li>
       <li>Change the data. Remove the convex hull by wrapping the mesh around the &#8220;back&#8221;. There will no longer be any -1 <code>halfedges</code>.<ul>
@@ -342,7 +346,7 @@ function forEachVoronoiCell(points, delaunay, callback) {
       </li>
     </ol>
 
-    <p>
+    <p id="incoming-edge-index">
       Here’s an example of how to find the “leftmost” half-edge:
     </p>
 
@@ -357,8 +361,8 @@ function forEachVoronoiCell(points, delaunay, callback) {
     }
     for (let p = 0; p < points.length; p++) {
         let incoming = index.get(p);
-        let edges = cellEdgeIds(delaunay, incoming);
-        let triangles = edges.map(edgeIdToTriangleId);
+        let edges = edgesAroundPoint(delaunay, incoming);
+        let triangles = edges.map(triangleOfEdge);
         let vertices = triangles.map(t => triangleCenter(points, delaunay, t));
         callback(p, vertices);
     }
@@ -368,6 +372,28 @@ function forEachVoronoiCell(points, delaunay, callback) {
     <p>
       However, even with these changes, constructing the Voronoi cell along the convex hull requires projecting the edges outwards and clipping them. The Delaunator library doesn’t provide this functionality; consider using <a href="https://github.com/d3/d3-delaunay">d3-delaunay</a> if you need it.
     </p>
+
+    <h2>Summary</h2>
+
+    <p>
+      The Delaunator library uses half-edges to represent the
+      relationships between points and triangles. On this page are
+      sample functions showing how to move between types of
+      objects:
+    </p>
+
+    <ul>
+      <li>edge → edges: <a href="#edge-to-edges"><code>nextHalfedge</code>, <code>prevHalfedge</code></a>, <a href="edge-to-opposite"><code>halfedges[]</code></a></li>
+      <li>edge → points: <a href="#edge-to-points"><code>triangles[]</code></a></li>
+      <li>edge → triangle: <a href="#edge-and-triangle"><code>triangleOfEdge</code></a></li>
+      <li>triangle → edges: <a href="#edge-and-triangle"><code>edgesOfTriangle</code></a></li>
+      <li>triangle → points: <a href="#triangle-to-points"><code>pointsOfTriangle</code></a></li>
+      <li>triangle → triangles: <a href="#triangle-to-triangles"><code>trianglesAdjacentToTriangle</code></a></li>
+      <li>point → incoming edges: <a href="#point-to-edges"><code>edgesAroundPoint</code></a></li>
+      <li>point → outgoing edges: <a href="#point-to-edges"><code>edgesAroundPoint</code></a> + <a href="#edge-to-opposite"><code>halfedge[]</code></a></li>
+      <li>point → points: <a href="#point-to-edges"><code>edgesAroundPoint</code></a> + <a href="#edge-to-points"><code>triangles[]</code></a></li>
+      <li>point → triangles: <a href="#point-to-edges"><code>edgesAroundPoint</code></a> + <a href="#edge-and-triangle"><code>triangleOfEdge</code></a></li>
+    </ul>
     
     <h2>About this page</h2>
 
