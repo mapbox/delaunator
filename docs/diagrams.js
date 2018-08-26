@@ -186,7 +186,7 @@ Step: <input type=range value=0 min=0 max=9 oninput="updateCirculation()">
 </figure>`;
 function updateCirculation() {
     const slider = $("#diagram-circulate input");
-    let incoming = cellEdgeIds(delaunay2, 2);
+    let incoming = edgesAroundPoint(delaunay2, 2);
     let outgoing = incoming.map(e => nextHalfedge(e));
     let step = slider.valueAsNumber;
     let edge = step%2 === 0? incoming[step/2] : outgoing[(step-1)/2];
