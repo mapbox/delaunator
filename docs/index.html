@@ -91,7 +91,7 @@
       The triangulation is represented as compact arrays of integers. It’s less convenient than other representations but is the reason the library is fast.
     </p>
 
-    <h2>Delaunay triangles</h2>
+    <h2 id="delaunay-triangles">Delaunay triangles</h2>
     
     <p>
       After constructing a <code>delaunay = Delaunator.from(points)</code> object, it will have a <code>triangles</code> array and a <code>halfedges</code> array, both indexed by half-edge id. What’s a half-edge?
@@ -130,11 +130,11 @@ function edgesOfTriangle(t) { return [3*t, 3*t+1, 3*t+2]; }
 function triangleOfEdge(e)  { return Math.floor(e/3); }
     </script>
 
-    <p>
+    <p id="edge-to-edges">
       It will also be useful to have some helper functions to go from one half-edge to the next and previous half-edges in the same triangle:
     </p>
 
-    <script id="edges-to-edges">
+    <script>
 function nextHalfedge(e) { return (e % 3 === 2) ? e-2 : e+1; }
 function prevHalfedge(e) { return (e % 3 === 0) ? e+2 : e-1; }
     </script>
@@ -207,7 +207,7 @@ function trianglesAdjacentToTriangle(delaunay, t) {
 }
     </script>
     
-    <h2>Voronoi cells</h2>
+    <h2 id="voronoi-cells">Voronoi cells</h2>
     
     <p>
       A <a href="https://en.wikipedia.org/wiki/Voronoi_diagram">Voronoi diagram</a> is built by connecting the Delaunay triangle circumcenters together using the <em>dual</em> of the Delaunay graph.
@@ -373,7 +373,7 @@ function forEachVoronoiCell(points, delaunay, callback) {
       However, even with these changes, constructing the Voronoi cell along the convex hull requires projecting the edges outwards and clipping them. The Delaunator library doesn’t provide this functionality; consider using <a href="https://github.com/d3/d3-delaunay">d3-delaunay</a> if you need it.
     </p>
 
-    <h2>Summary</h2>
+    <h2 id="summary">Summary</h2>
 
     <p>
       The Delaunator library uses half-edges to represent the
@@ -383,7 +383,7 @@ function forEachVoronoiCell(points, delaunay, callback) {
     </p>
 
     <ul>
-      <li>edge → edges: <a href="#edge-to-edges"><code>nextHalfedge</code>, <code>prevHalfedge</code></a>, <a href="edge-to-opposite"><code>halfedges[]</code></a></li>
+      <li>edge → edges: <a href="#edge-to-edges"><code>nextHalfedge</code>, <code>prevHalfedge</code></a>, <a href="#edge-to-opposite"><code>halfedges[]</code></a></li>
       <li>edge → points: <a href="#edge-to-points"><code>triangles[]</code></a></li>
       <li>edge → triangle: <a href="#edge-and-triangle"><code>triangleOfEdge</code></a></li>
       <li>triangle → edges: <a href="#edge-and-triangle"><code>edgesOfTriangle</code></a></li>
@@ -395,7 +395,7 @@ function forEachVoronoiCell(points, delaunay, callback) {
       <li>point → triangles: <a href="#point-to-edges"><code>edgesAroundPoint</code></a> + <a href="#edge-and-triangle"><code>triangleOfEdge</code></a></li>
     </ul>
     
-    <h2>About this page</h2>
+    <h2 id="about">About this page</h2>
 
     <p>
       The code shown on this page is also <em>running</em> on the page, to produce the diagrams. By default the <code>&lt;script&gt;</code> tags on the page are hidden, but on this page they are made visible with CSS: <code>script { display: block }</code>.
