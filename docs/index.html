@@ -172,14 +172,14 @@ function forEachTriangleEdge(points, delaunay, callback) {
     <script id="triangle-to-points">
 function edgesOfTriangle(t) { return [3*t, 3*t+1, 3*t+2]; }
 
-function pointsOfTriangle(points, delaunay, t) {
+function pointsOfTriangle(delaunay, t) {
     return edgesOfTriangle(t)
-           .map(e => points[delaunay.triangles[e]]);
+           .map(e => delaunay.triangles[e]);
 }
 
 function forEachTriangle(points, delaunay, callback) {
     for (let t = 0; t < delaunay.triangles.length / 3; t++) {
-        callback(t, pointsOfTriangle(points, delaunay, t));
+        callback(t, pointsOfTriangle(delaunay, t).map(p => points[p]));
     }
 }
     </script>
@@ -246,7 +246,7 @@ function circumcenter(a, b, c) {
     
     <script>
 function triangleCenter(points, delaunay, t) {
-  let vertices = pointsOfTriangle(points, delaunay, t);
+  let vertices = pointsOfTriangle(delaunay, t).map(p => points[p]);
   return circumcenter(vertices[0], vertices[1], vertices[2]);
 }
     </script>
