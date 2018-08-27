@@ -22,8 +22,8 @@
   },
   "scripts": {
     "lint": "eslint index.js test.js bench.js rollup.config.js",
-    "pretest": "npm run lint && npm run build",
-    "test": "node test.js",
+    "pretest": "npm run lint",
+    "test": "node -r esm test.js",
     "bench": "node -r esm bench.js",
     "build": "rollup -c",
     "prepublishOnly": "npm test"

@@ -1,6 +1,6 @@
 /* eslint no-unused-vars: 0 */
 
-import Delaunator from './';
+import Delaunator from './index.js';
 // import fasterDelaunay from 'faster-delaunay';
 // import incrementalDelaunay from 'incremental-delaunay';
 // import delaunayFast from 'delaunay-fast';
