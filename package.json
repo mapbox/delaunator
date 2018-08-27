@@ -1,6 +1,6 @@
 {
   "name": "delaunator",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "A really fast JavaScript library for Delaunay triangulation of 2D points",
   "main": "delaunator.js",
   "module": "index.js",
