@@ -35,8 +35,8 @@ const Delaunator = require('delaunator');
 Or use a browser build directly:
 
 ```html
-<script src="https://unpkg.com/delaunator@2.0.0/delaunator.min.js"></script> <!-- minified build -->
-<script src="https://unpkg.com/delaunator@2.0.0/delaunator.js"></script> <!-- dev build -->
+<script src="https://unpkg.com/delaunator@2.0.1/delaunator.min.js"></script> <!-- minified build -->
+<script src="https://unpkg.com/delaunator@2.0.1/delaunator.js"></script> <!-- dev build -->
 ```
 
 ## API Reference
