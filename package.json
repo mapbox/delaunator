@@ -26,7 +26,7 @@
     "test": "node -r esm test.js",
     "bench": "node -r esm bench.js",
     "build": "rollup -c",
-    "prepublishOnly": "npm test"
+    "prepublishOnly": "npm test && npm build"
   },
   "files": [
     "index.js",
