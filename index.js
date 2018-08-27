@@ -351,7 +351,7 @@ function circumcenter(ax, ay, bx, by, cx, cy) {
 // create a new node in a doubly linked list
 function insertNode(coords, i, prev) {
     const node = {
-        i: i,
+        i,
         x: coords[2 * i],
         y: coords[2 * i + 1],
         t: 0,

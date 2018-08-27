@@ -7,39 +7,39 @@ const triangles = [623, 636, 619, 636, 444, 619, 619, 632, 623, 618, 624, 619, 6
 
 /* eslint no-new: 0 */
 
-test('triangulates points', function (t) {
+test('triangulates points', (t) => {
     const d = Delaunator.from(points);
     t.same(Array.from(d.triangles), triangles);
     t.end();
 });
 
-test('triangulates plain array', function (t) {
-    const d = new Delaunator([].concat.apply([], points));
+test('triangulates plain array', (t) => {
+    const d = new Delaunator([].concat(...points));
     t.same(Array.from(d.triangles), triangles);
     t.end();
 });
 
-test('triangulates typed array', function (t) {
-    const d = new Delaunator(Float64Array.from([].concat.apply([], points)));
+test('triangulates typed array', (t) => {
+    const d = new Delaunator(Float64Array.from([].concat(...points)));
     t.same(Array.from(d.triangles), triangles);
     t.end();
 });
 
-test('constructor errors on invalid array', function (t) {
-    t.throws(function () {
+test('constructor errors on invalid array', (t) => {
+    t.throws(() => {
         new Delaunator({length: -1});
     }, /Invalid typed array length/);
-    t.throws(function () {
+    t.throws(() => {
         new Delaunator(points);
     }, /Expected coords to contain numbers/);
     t.end();
 });
 
-test('produces properly connected halfedges', function (t) {
+test('produces properly connected halfedges', (t) => {
     testHalfedges(t, points);
 });
 
-test('issue #11', function (t) {
+test('issue #11', (t) => {
     testHalfedges(t, [[516, 661], [369, 793], [426, 539], [273, 525], [204, 694], [747, 750], [454, 390]]);
 });
 
@@ -55,28 +55,28 @@ function testHalfedges(t, points) {
     t.end();
 }
 
-test('throws on small number of points', function (t) {
-    t.throws(function () {
+test('throws on small number of points', (t) => {
+    t.throws(() => {
         Delaunator.from(points.slice(0, 1));
     });
-    t.throws(function () {
+    t.throws(() => {
         Delaunator.from(points.slice(0, 2));
     });
     t.end();
 });
 
-test('throws on all-collinear input', function (t) {
-    t.throws(function () {
+test('throws on all-collinear input', (t) => {
+    t.throws(() => {
         Delaunator.from([[0, 0], [1, 0], [2, 0], [3, 0]]);
     });
     t.end();
 });
 
-test('supports custom point format', function (t) {
+test('supports custom point format', (t) => {
     const d = Delaunator.from(
         [{x: 5, y: 5}, {x: 7, y: 5}, {x: 7, y: 6}],
-        function (p) { return p.x; },
-        function (p) { return p.y; });
+        p => p.x,
+        p => p.y);
     t.same(d.triangles, [0, 2, 1]);
     t.end();
 });
