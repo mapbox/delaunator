@@ -27,7 +27,7 @@
     "bench": "node -r esm bench.js",
     "build": "rollup -c",
     "start": "rollup -cw",
-    "prepublishOnly": "npm test && npm build"
+    "prepublishOnly": "npm test && npm run build"
   },
   "files": [
     "index.js",
