@@ -43,6 +43,10 @@ test('issue #11', (t) => {
     testHalfedges(t, [[516, 661], [369, 793], [426, 539], [273, 525], [204, 694], [747, 750], [454, 390]]);
 });
 
+test('issue #24', (t) => {
+    testHalfedges(t, [[382, 302], [382, 328], [382, 205], [623, 175], [382, 188], [382, 284], [623, 87], [623, 341], [141, 227]]);
+});
+
 function testHalfedges(t, points) {
     const d = Delaunator.from(points);
     for (let i = 0; i < d.halfedges.length; i++) {

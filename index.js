@@ -178,9 +178,6 @@ export default class Delaunator {
 
             // recursively flip triangles from the point until they satisfy the Delaunay condition
             e.t = this._legalize(t + 2);
-            if (e.prev.prev.t === halfedges[t + 1]) {
-                e.prev.prev.t = t + 2;
-            }
 
             // walk forward through the hull, adding more triangles and flipping recursively
             let q = e.next;
@@ -231,6 +228,21 @@ export default class Delaunator {
 
         const b = halfedges[a];
 
+        /* if the pair of triangles doesn't satisfy the Delaunay condition
+         * (p1 is inside the circumcircle of [p0, pl, pr]), flip them,
+         * then do the same check/flip recursively for the new pair of triangles
+         *
+         *           pl                    pl
+         *          /||\                  /  \
+         *       al/ || \bl            al/    \a
+         *        /  ||  \              /      \
+         *       /  a||b  \    flip    /___ar___\
+         *     p0\   ||   /p1   =>   p0\---bl---/p1
+         *        \  ||  /              \      /
+         *       ar\ || /br             b\    /br
+         *          \||/                  \  /
+         *           pr                    pr
+         */
         const a0 = a - a % 3;
         const b0 = b - b % 3;
 
@@ -253,7 +265,20 @@ export default class Delaunator {
             triangles[a] = p1;
             triangles[b] = p0;
 
-            this._link(a, halfedges[bl]);
+            const hbl = halfedges[bl];
+
+            // edge swapped on the other side of the hull (rare); fix the halfedge reference
+            if (hbl === -1) {
+                let e = this.hull;
+                do {
+                    if (e.t === bl) {
+                        e.t = a;
+                        break;
+                    }
+                    e = e.next;
+                } while (e !== this.hull);
+            }
+            this._link(a, hbl);
             this._link(b, halfedges[ar]);
             this._link(ar, bl);
 
