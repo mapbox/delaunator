@@ -215,12 +215,7 @@ export default class Delaunator {
     }
 
     _hashKey(x, y) {
-        const dx = x - this._cx;
-        const dy = y - this._cy;
-        // use pseudo-angle: a measure that monotonically increases
-        // with real angle, but doesn't require expensive trigonometry
-        const p = 1 - dx / (Math.abs(dx) + Math.abs(dy));
-        return Math.floor((2 + (dy < 0 ? -p : p)) / 4 * this._hashSize);
+        return Math.floor(pseudoAngle(x - this._cx, y - this._cy) * this._hashSize);
     }
 
     _legalize(a) {
@@ -312,6 +307,12 @@ export default class Delaunator {
 
         return t;
     }
+}
+
+// monotonically increases with real angle, but doesn't need expensive trigonometry
+function pseudoAngle(dx, dy) {
+    const p = dx / (Math.abs(dx) + Math.abs(dy));
+    return (dy > 0 ? 3 - p : 1 + p) / 4; // [0..1)
 }
 
 function dist(ax, ay, bx, by) {
