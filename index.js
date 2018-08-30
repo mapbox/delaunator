@@ -160,6 +160,7 @@ export default class Delaunator {
                 key = (key + 1) % this._hashSize;
             } while ((!start || start.removed) && key !== startKey);
 
+            start = start.prev;
             e = start;
             while (area(x, y, e.x, e.y, e.next.x, e.next.y) >= 0) {
                 e = e.next;
