@@ -14,17 +14,23 @@ function triangulate(points) {
     // delaunayFast.triangulate(points);
 }
 
-const counts = [10000, 20000, 50000, 100000, 200000, 500000, 1000000];
-const generate = uniform;
+const distributions = [uniform, gaussian, grid, degenerate];
+const counts = [20000, 100000, 200000, 500000, 1000000];
 
-triangulate(generate(counts[0]));
+for (const generate of distributions) {
+    console.log(`${generate.name}:`);
 
-for (let i = 0; i < counts.length; i++) {
-    const c = counts[i];
-    const points = generate(c);
-    console.time(c);
-    triangulate(points);
-    console.timeEnd(c);
+    // warmup
+    triangulate(generate(counts[0]));
+    triangulate(generate(counts[1]));
+
+    for (let i = 0; i < counts.length; i++) {
+        const c = counts[i];
+        const points = generate(c);
+        console.time(c);
+        triangulate(points);
+        console.timeEnd(c);
+    }
 }
 
 function uniform(count) {
@@ -35,10 +41,30 @@ function uniform(count) {
     return points;
 }
 
+function grid(count) {
+    const points = [];
+    const size = Math.sqrt(count);
+    for (let i = 0; i < size; i++) {
+        for (let j = 0; j < size; j++) {
+            points.push([i, j]);
+        }
+    }
+    return points;
+}
+
 function gaussian(count) {
     const points = [];
     for (let i = 0; i < count; i++) {
         points.push([pseudoNormal() * 1e3, pseudoNormal() * 1e3]);
+    }
+    return points;
+}
+
+function degenerate(count) {
+    const points = [[0, 0]];
+    for (let i = 0; i < count; i++) {
+        const angle = 2 * Math.PI * i / count;
+        points.push([1e10 * Math.sin(angle), 1e10 * Math.cos(angle)]);
     }
     return points;
 }
