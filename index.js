@@ -246,6 +246,8 @@ export default class Delaunator {
         const ar = a0 + (a + 2) % 3;
         const bl = b0 + (b + 2) % 3;
 
+        if (b === -1) return ar;
+
         const p0 = triangles[ar];
         const pr = triangles[a];
         const pl = triangles[al];
