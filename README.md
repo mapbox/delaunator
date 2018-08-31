@@ -1,4 +1,4 @@
-# delaunator
+# delaunator [![Build Status](https://travis-ci.org/mapbox/delaunator.svg?branch=master)](https://travis-ci.org/mapbox/delaunator) [![](https://img.shields.io/badge/simply-awesome-brightgreen.svg)](https://github.com/mourner/projects)
 
 A really fast JavaScript library for
 [Delaunay triangulation](https://en.wikipedia.org/wiki/Delaunay_triangulation) of 2D points.
@@ -6,13 +6,13 @@ A really fast JavaScript library for
 - [Interactive Demo](https://mapbox.github.io/delaunator/demo.html)
 - [Guide to data structures](https://mapbox.github.io/delaunator/)
 
-[![Build Status](https://travis-ci.org/mapbox/delaunator.svg?branch=master)](https://travis-ci.org/mapbox/delaunator)
-[![](https://img.shields.io/badge/simply-awesome-brightgreen.svg)](https://github.com/mourner/projects)
-
 Projects based on Delaunator:
 
 - [d3-delaunay](https://github.com/d3/d3-delaunay) for Voronoi diagrams, search, traversal and rendering.
 - [d3-geo-voronoi](https://github.com/Fil/d3-geo-voronoi) for Delaunay triangulations and Voronoi diagrams on a sphere (e.g. for geographic locations).
+- [fogleman/delaunay](https://github.com/fogleman/delaunay) is a port of Delaunator to Go.
+
+<img src="delaunator.png" alt="Delaunay triangulation example" width="640" />
 
 ## Example
 
