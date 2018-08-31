@@ -9,7 +9,10 @@ A really fast JavaScript library for
 [![Build Status](https://travis-ci.org/mapbox/delaunator.svg?branch=master)](https://travis-ci.org/mapbox/delaunator)
 [![](https://img.shields.io/badge/simply-awesome-brightgreen.svg)](https://github.com/mourner/projects)
 
-For Voronoi diagram computation, search, traversal and rendering, check out [d3-delaunay](https://github.com/d3/d3-delaunay) which is based on Delaunator.
+Projects based on Delaunator:
+
+- [d3-delaunay](https://github.com/d3/d3-delaunay) for Voronoi diagrams, search, traversal and rendering.
+- [d3-geo-voronoi](https://github.com/Fil/d3-geo-voronoi) for Delaunay triangulations and Voronoi diagrams on a sphere (e.g. for geographic locations).
 
 ## Example
 
