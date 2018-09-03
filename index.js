@@ -54,56 +54,53 @@ export default class Delaunator {
                 minDist = d;
             }
         }
+        const i0x = coords[2 * i0];
+        const i0y = coords[2 * i0 + 1];
 
         minDist = Infinity;
 
         // find the point closest to the seed
         for (let i = 0; i < n; i++) {
             if (i === i0) continue;
-            const d = dist(coords[2 * i0], coords[2 * i0 + 1], coords[2 * i], coords[2 * i + 1]);
+            const d = dist(i0x, i0y, coords[2 * i], coords[2 * i + 1]);
             if (d < minDist && d > 0) {
                 i1 = i;
                 minDist = d;
             }
         }
+        let i1x = coords[2 * i1];
+        let i1y = coords[2 * i1 + 1];
 
         let minRadius = Infinity;
 
         // find the third point which forms the smallest circumcircle with the first two
         for (let i = 0; i < n; i++) {
             if (i === i0 || i === i1) continue;
-
-            const r = circumradius(
-                coords[2 * i0], coords[2 * i0 + 1],
-                coords[2 * i1], coords[2 * i1 + 1],
-                coords[2 * i], coords[2 * i + 1]);
-
+            const r = circumradius(i0x, i0y, i1x, i1y, coords[2 * i], coords[2 * i + 1]);
             if (r < minRadius) {
                 i2 = i;
                 minRadius = r;
             }
         }
+        let i2x = coords[2 * i2];
+        let i2y = coords[2 * i2 + 1];
 
         if (minRadius === Infinity) {
             throw new Error('No Delaunay triangulation exists for this input.');
         }
 
         // swap the order of the seed points for counter-clockwise orientation
-        if (orient(coords[2 * i0], coords[2 * i0 + 1],
-            coords[2 * i1], coords[2 * i1 + 1],
-            coords[2 * i2], coords[2 * i2 + 1])) {
-
-            const tmp = i1;
+        if (orient(i0x, i0y, i1x, i1y, i2x, i2y)) {
+            const i = i1;
+            const x = i1x;
+            const y = i1y;
             i1 = i2;
-            i2 = tmp;
+            i1x = i2x;
+            i1y = i2y;
+            i2 = i;
+            i2x = x;
+            i2y = y;
         }
-
-        const i0x = coords[2 * i0];
-        const i0y = coords[2 * i0 + 1];
-        const i1x = coords[2 * i1];
-        const i1y = coords[2 * i1 + 1];
-        const i2x = coords[2 * i2];
-        const i2y = coords[2 * i2 + 1];
 
         const center = circumcenter(i0x, i0y, i1x, i1y, i2x, i2y);
         this._cx = center.x;
@@ -114,8 +111,7 @@ export default class Delaunator {
 
         // initialize a hash table for storing edges of the advancing convex hull
         this._hashSize = Math.ceil(Math.sqrt(n));
-        this._hash = [];
-        for (let i = 0; i < this._hashSize; i++) this._hash[i] = null;
+        this._hash = new Array(this._hashSize);
 
         // initialize a circular doubly-linked list that will hold an advancing convex hull
         let e = this.hull = insertNode(coords, i0);
@@ -136,8 +132,8 @@ export default class Delaunator {
 
         this._addTriangle(i0, i1, i2, -1, -1, -1);
 
-        for (let k = 0, xp, yp; k < ids.length; k++) {
-            const i = ids[k];
+        let xp, yp;
+        for (const i of ids) {
             const x = coords[2 * i];
             const y = coords[2 * i + 1];
 
@@ -147,9 +143,7 @@ export default class Delaunator {
             yp = y;
 
             // skip seed triangle points
-            if ((x === i0x && y === i0y) ||
-                (x === i1x && y === i1y) ||
-                (x === i2x && y === i2y)) continue;
+            if (i === i0 || i === i1 || i === i2) continue;
 
             // find a visible edge on the convex hull using edge hash
             const startKey = this._hashKey(x, y);
