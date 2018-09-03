@@ -124,6 +124,7 @@ function validate(t, points) {
     }
 }
 
+// Kahan and Babuska summation, Neumaier variant; accumulates less FP error
 function sum(x) {
     let sum = x[0];
     let err = 0;
