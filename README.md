@@ -85,16 +85,18 @@ but they're one of the key reasons this library is fast.
 
 ## Performance
 
-Benchmark results against four fastest other libraries
-(`npm run bench` on Macbook Pro Retina 15" 2017, Node v8.10.0):
+Benchmark results against other Delaunay JS libraries
+(`npm run bench` on Macbook Pro Retina 15" 2017, Node v10.9.0):
 
-library | 10,000 | 20,000 | 50,000 | 100,000 | 200,000 | 500,000 | 1,000,000
-:-- | --: | --: | --: | --: | --: | --: | --:
-delaunator | 31ms | 17ms | 59ms | 125ms | 232ms | 613ms | 1.35s
-[faster-delaunay](https://github.com/Bathlamos/delaunay-triangulation) | 48ms | 88ms | 243ms | 447ms | 1.02s | 2.72s | 4.95s
-[incremental-delaunay](https://github.com/mikolalysenko/incremental-delaunay) | 56ms | 131ms | 309ms | 577ms | 1.12s | 3.01s | 6.37s
-[d3-voronoi](https://github.com/d3/d3-voronoi) | 132ms | 220ms | 483ms | 1s | 2.27s | 6.3s | 12.67s
-[delaunay-fast](https://github.com/ironwallaby/delaunay) | 150ms | 343ms | 1.19s | 3.35s | 10.09s | 41.09s | 117.53s
+&nbsp; | uniform 100k | uniform 1&nbsp;million | gauss 100k | gauss 1&nbsp;million | grid 100k | grid 1&nbsp;million | degen 100k | degen 1&nbsp;million
+:-- | --: | --: | --: | --: | --: | --: | --: | --:
+**delaunator** | 97ms | 1.28s | 70ms | 1s | 81ms | 988ms | 48ms | 917ms
+[faster&#8209;delaunay](https://github.com/Bathlamos/delaunay-triangulation) | 473ms | 4.27s | 411ms | 4.62s | 272ms | 4.3s | 68ms | 810ms
+[incremental&#8209;delaunay](https://github.com/mikolalysenko/incremental-delaunay) | 547ms | 5.9s | 505ms | 6.08s | 172ms | 2.11s | 528ms | 6.09s
+[d3&#8209;voronoi](https://github.com/d3/d3-voronoi) | 972ms | 15.04s | 909ms | 13.86s | 358ms | 5.55s | 720ms | 11.13s
+[delaunay&#8209;fast](https://github.com/ironwallaby/delaunay) | 3.8s | 132s | 4s | 138s | 12.57s | 399s | timeout | timeout
+[delaunay](https://github.com/darkskyapp/delaunay) | 4.85s | 156s | 5.73s | 178s | 15.05s | 326s | timeout | timeout
+[delaunay&#8209;triangulate](https://github.com/mikolalysenko/delaunay-triangulate) | 2.24s | OOM | 2.04s | OOM | OOM | OOM | 1.51s | OOM
 
 ## Papers
 

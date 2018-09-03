@@ -4,7 +4,9 @@ import Delaunator from './index.js';
 // import fasterDelaunay from 'faster-delaunay';
 // import incrementalDelaunay from 'incremental-delaunay';
 // import delaunayFast from 'delaunay-fast';
+// import delaunaySlow from 'delaunay';
 // import {voronoi} from 'd3-voronoi';
+// import delaunayTriangulate from 'delaunay-triangulate';
 
 function triangulate(points) {
     Delaunator.from(points);
@@ -12,6 +14,8 @@ function triangulate(points) {
     // voronoi()(points);
     // incrementalDelaunay(points);
     // delaunayFast.triangulate(points);
+    // delaunaySlow.triangulate(points);
+    // delaunayTriangulate(points);
 }
 
 const distributions = [uniform, gaussian, grid, degenerate];
