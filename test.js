@@ -117,7 +117,7 @@ function validate(t, points) {
     const trianglesArea = sum(triangleAreas);
 
     const err = Math.abs((hullArea - trianglesArea) / hullArea);
-    if (err <= Math.pow(2, -52)) {
+    if (err <= Math.pow(2, -51)) {
         t.pass(`triangulation is valid: ${err} error`);
     } else {
         t.fail(`triangulation is broken: ${err} error`);

@@ -1,8 +1,4 @@
 
-const EPSILON = Math.pow(2, -52);
-const EPSILON_IN_CIRCLE = 12 * EPSILON;
-const EPSILON_ORIENT = 2 * EPSILON;
-
 export default class Delaunator {
 
     static from(points, getX, getY) {
@@ -145,8 +141,8 @@ export default class Delaunator {
             const x = coords[2 * i];
             const y = coords[2 * i + 1];
 
-            // skip near-duplicate points
-            if (k > 0 && Math.abs(x - xp) <= EPSILON && Math.abs(y - yp) <= EPSILON) continue;
+            // skip duplicate points
+            if (x === xp && y === yp) continue;
             xp = x;
             yp = y;
 
@@ -332,7 +328,7 @@ function dist(ax, ay, bx, by) {
 }
 
 function orient(px, py, qx, qy, rx, ry) {
-    return (qy - py) * (rx - qx) - (qx - px) * (ry - qy) < -EPSILON_ORIENT;
+    return (qy - py) * (rx - qx) - (qx - px) * (ry - qy) < 0;
 }
 
 function inCircle(ax, ay, bx, by, cx, cy, px, py) {
@@ -349,7 +345,7 @@ function inCircle(ax, ay, bx, by, cx, cy, px, py) {
 
     return dx * (ey * cp - bp * fy) -
            dy * (ex * cp - bp * fx) +
-           ap * (ex * fy - ey * fx) < -EPSILON_IN_CIRCLE;
+           ap * (ex * fy - ey * fx) < 0;
 }
 
 function circumradius(ax, ay, bx, by, cx, cy) {
