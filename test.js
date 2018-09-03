@@ -79,7 +79,7 @@ test('supports custom point format', (t) => {
         [{x: 5, y: 5}, {x: 7, y: 5}, {x: 7, y: 6}],
         p => p.x,
         p => p.y);
-    t.same(d.triangles, [0, 2, 1]);
+    t.same(Array.from(d.triangles), [1, 0, 2]);
     t.end();
 });
 

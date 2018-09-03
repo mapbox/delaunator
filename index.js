@@ -44,8 +44,15 @@ export default class Delaunator {
             ids[i] = i;
         }
 
-        const cx = (minX + maxX) / 2;
-        const cy = (minY + maxY) / 2;
+        const scale = (1.0 - EPSILON) / Math.max(maxX - minX, maxY - minY);
+
+        for (let i = 0; i < coords.length; i += 2) {
+            coords[i + 0] = 1 + (coords[i + 0] - minX) * scale;
+            coords[i + 1] = 1 + (coords[i + 1] - minY) * scale;
+        }
+
+        const cx = 1 + ((minX + maxX) / 2 - minX) * scale;
+        const cy = 1 + ((minY + maxY) / 2 - minY) * scale;
 
         let minDist = Infinity;
         let i0, i1, i2;
