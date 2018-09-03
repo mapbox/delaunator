@@ -1,4 +1,8 @@
 
+const EPSILON = Math.pow(2, -52);
+const EPSILON_IN_CIRCLE = 12 * EPSILON;
+const EPSILON_ORIENT = 2 * EPSILON;
+
 export default class Delaunator {
 
     static from(points, getX, getY) {
@@ -89,9 +93,9 @@ export default class Delaunator {
         }
 
         // swap the order of the seed points for counter-clockwise orientation
-        if (area(coords[2 * i0], coords[2 * i0 + 1],
+        if (orient(coords[2 * i0], coords[2 * i0 + 1],
             coords[2 * i1], coords[2 * i1 + 1],
-            coords[2 * i2], coords[2 * i2 + 1]) < 0) {
+            coords[2 * i2], coords[2 * i2 + 1])) {
 
             const tmp = i1;
             i1 = i2;
@@ -141,8 +145,8 @@ export default class Delaunator {
             const x = coords[2 * i];
             const y = coords[2 * i + 1];
 
-            // skip duplicate points
-            if (x === xp && y === yp) continue;
+            // skip near-duplicate points
+            if (k > 0 && Math.abs(x - xp) <= EPSILON && Math.abs(y - yp) <= EPSILON) continue;
             xp = x;
             yp = y;
 
@@ -162,12 +166,15 @@ export default class Delaunator {
 
             start = start.prev;
             e = start;
-            while (area(x, y, e.x, e.y, e.next.x, e.next.y) >= 0) {
+            while (!orient(x, y, e.x, e.y, e.next.x, e.next.y)) {
                 e = e.next;
                 if (e === start) {
-                    throw new Error('Something is wrong with the input points.');
+                    e = null;
+                    break;
                 }
             }
+            // likely a near-duplicate point; skip it
+            if (!e) continue;
 
             const walkBack = e === start;
 
@@ -182,7 +189,7 @@ export default class Delaunator {
 
             // walk forward through the hull, adding more triangles and flipping recursively
             let q = e.next;
-            while (area(x, y, q.x, q.y, q.next.x, q.next.y) < 0) {
+            while (orient(x, y, q.x, q.y, q.next.x, q.next.y)) {
                 t = this._addTriangle(q.i, i, q.next.i, q.prev.t, -1, q.t);
                 q.prev.t = this._legalize(t + 2);
                 this.hull = removeNode(q);
@@ -192,7 +199,7 @@ export default class Delaunator {
             if (walkBack) {
                 // walk backward from the other side, adding more triangles and flipping
                 q = e.prev;
-                while (area(x, y, q.prev.x, q.prev.y, q.x, q.y) < 0) {
+                while (orient(x, y, q.prev.x, q.prev.y, q.x, q.y)) {
                     t = this._addTriangle(q.prev.i, i, q.i, -1, q.t, q.prev.t);
                     this._legalize(t + 2);
                     q.prev.t = t;
@@ -324,8 +331,8 @@ function dist(ax, ay, bx, by) {
     return dx * dx + dy * dy;
 }
 
-function area(px, py, qx, qy, rx, ry) {
-    return (qy - py) * (rx - qx) - (qx - px) * (ry - qy);
+function orient(px, py, qx, qy, rx, ry) {
+    return (qy - py) * (rx - qx) - (qx - px) * (ry - qy) < -EPSILON_ORIENT;
 }
 
 function inCircle(ax, ay, bx, by, cx, cy, px, py) {
@@ -342,7 +349,7 @@ function inCircle(ax, ay, bx, by, cx, cy, px, py) {
 
     return dx * (ey * cp - bp * fy) -
            dy * (ex * cp - bp * fx) +
-           ap * (ex * fy - ey * fx) < 0;
+           ap * (ex * fy - ey * fx) < -EPSILON_IN_CIRCLE;
 }
 
 function circumradius(ax, ay, bx, by, cx, cy) {
