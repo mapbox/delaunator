@@ -145,8 +145,8 @@ export default class Delaunator {
             const x = coords[2 * i];
             const y = coords[2 * i + 1];
 
-            // skip duplicate points
-            if (k > 0 && Math.abs(x - xp) < err && Math.abs(y - yp) < err) continue;
+            // skip near-duplicate points
+            if (k > 0 && Math.abs(x - xp) <= err && Math.abs(y - yp) <= err) continue;
             xp = x;
             yp = y;
 
@@ -169,9 +169,12 @@ export default class Delaunator {
             while (!orient(x, y, e.x, e.y, e.next.x, e.next.y)) {
                 e = e.next;
                 if (e === start) {
-                    throw new Error('Something is wrong with the input points.');
+                    e = null;
+                    break;
                 }
             }
+            // likely a near-duplicate point; skip it
+            if (!e) continue;
 
             const walkBack = e === start;
 
