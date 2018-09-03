@@ -11,7 +11,9 @@ const config = (file, plugins) => ({
     plugins
 });
 
+const bubleConfig = {transforms: {dangerousForOf: true}};
+
 export default [
-    config('delaunator.js', [buble()]),
-    config('delaunator.min.js', [terser(), buble()])
+    config('delaunator.js', [buble(bubleConfig)]),
+    config('delaunator.min.js', [terser(), buble(bubleConfig)])
 ];
