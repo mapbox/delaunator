@@ -97,6 +97,7 @@ Benchmark results against other Delaunay JS libraries
 [delaunay&#8209;fast](https://github.com/ironwallaby/delaunay) | 3.8s | 132s | 4s | 138s | 12.57s | 399s | timeout | timeout
 [delaunay](https://github.com/darkskyapp/delaunay) | 4.85s | 156s | 5.73s | 178s | 15.05s | 326s | timeout | timeout
 [delaunay&#8209;triangulate](https://github.com/mikolalysenko/delaunay-triangulate) | 2.24s | OOM | 2.04s | OOM | OOM | OOM | 1.51s | OOM
+[cdt2d](https://github.com/mikolalysenko/cdt2d) | 45s | timeout | 51s | timeout | 118s | timeout | 17s | timeout
 
 ## Papers
 
