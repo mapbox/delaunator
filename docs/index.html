@@ -24,18 +24,18 @@
             font-family: var(--sans-serif);
         }
 
-        code, tt, kbd, pre, script {
+        code, tt, kbd, pre {
             font-family: var(--monospace);
             font-size: 15px;
         }
 
-        body > * {
+        main > * {
             margin-left: auto;
             margin-right: auto;
             max-width: 60rem;
         }
 
-        pre, script:not([src]) {
+        pre { 
             line-height: 1.5;
             display: block;
             white-space: pre;
@@ -48,7 +48,7 @@
             background: var(--background-diagram);
             max-width: 100%
         }
-        pre, script, svg:not(.plain) {
+        pre, svg:not(.plain) {
             border: 1px solid hsl(60,20%,70%);
             box-shadow: inset 0 1px 5px 0px rgba(0,0,0,0.3);
             border-radius: 4px;
@@ -67,12 +67,15 @@
         .highlight .edges { stroke-width: 7.0; stroke: hsl(0,50%,80%); marker-end: unset; }
 
     </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github-gist.min.css">
   </head>
 
   <body>
 
+    <main>
+      
     <h1>Delaunator guide</h1>
-
+      
     <p>
       <a href="https://github.com/mapbox/delaunator">Delaunator</a> is a fast library for Delaunay triangulation. It takes as input a set of points:
     </p>
@@ -395,13 +398,8 @@ function forEachVoronoiCell(points, delaunay, callback) {
       <li>point → triangles: <a href="#point-to-edges"><code>edgesAroundPoint</code></a> + <a href="#edge-and-triangle"><code>triangleOfEdge</code></a></li>
     </ul>
 
-    <h2 id="about">About this page</h2>
-
-    <p>
-      The code shown on this page is also <em>running</em> on the page, to produce the diagrams. By default the <code>&lt;script&gt;</code> tags on the page are hidden, but on this page they are made visible with CSS: <code>script { display: block }</code>.
-    </p>
-
-
+    </main>
+    
     <footer>
       <svg class="plain" width="1" height="1">
         <defs>
@@ -412,6 +410,14 @@ function forEachVoronoiCell(points, delaunay, callback) {
       </svg>
       <script src="https://unpkg.com/delaunator@3.0.2/delaunator.min.js"></script>
       <script src="diagrams.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+      <script>
+        document.querySelectorAll('main script:not([src])').forEach(element => {
+            let sibling = document.createElement('pre');
+            sibling.innerHTML = hljs.highlight('js', element.textContent, false, null).value;
+            element.parentNode.insertBefore(sibling, element);
+        });
+      </script>
     </footer>
 
   </body>
