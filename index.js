@@ -213,7 +213,7 @@ export default class Delaunator {
     }
 
     _hashKey(x, y) {
-        return Math.floor(pseudoAngle(x - this._cx, y - this._cy) * this._hashSize);
+        return Math.floor(pseudoAngle(x - this._cx, y - this._cy) * this._hashSize) % this._hashSize;
     }
 
     _legalize(a) {
@@ -312,7 +312,7 @@ export default class Delaunator {
 // monotonically increases with real angle, but doesn't need expensive trigonometry
 function pseudoAngle(dx, dy) {
     const p = dx / (Math.abs(dx) + Math.abs(dy));
-    return (dy > 0 ? 3 - p : 1 + p) / 4; // [0..1)
+    return (dy > 0 ? 3 - p : 1 + p) / 4; // [0..1]
 }
 
 function dist(ax, ay, bx, by) {
