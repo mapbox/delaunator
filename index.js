@@ -1,4 +1,6 @@
 
+const EPSILON = Math.pow(2, -52);
+
 export default class Delaunator {
 
     static from(points, getX, getY) {
@@ -132,13 +134,13 @@ export default class Delaunator {
 
         this._addTriangle(i0, i1, i2, -1, -1, -1);
 
-        let xp, yp;
-        for (const i of ids) {
+        for (let k = 0, xp, yp; k < ids.length; k++) {
+            const i = ids[k];
             const x = coords[2 * i];
             const y = coords[2 * i + 1];
 
-            // skip duplicate points
-            if (x === xp && y === yp) continue;
+            // skip near-duplicate points
+            if (k > 0 && Math.abs(x - xp) <= EPSILON && Math.abs(y - yp) <= EPSILON) continue;
             xp = x;
             yp = y;
 
