@@ -35,7 +35,10 @@
     "delaunator.min.js"
   ],
   "eslintConfig": {
-    "extends": "mourner"
+    "extends": "mourner",
+    "rules": {
+      "no-sequences": 0
+    }
   },
   "keywords": [
     "delaunay triangulation",
