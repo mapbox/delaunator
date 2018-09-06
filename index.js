@@ -132,9 +132,9 @@ export default class Delaunator {
         hullTri[i1] = 1;
         hullTri[i2] = 2;
 
-        this._hashEdge(i0);
-        this._hashEdge(i1);
-        this._hashEdge(i2);
+        this._hash[this._hashKey(i0x, i0y)] = i0;
+        this._hash[this._hashKey(i1x, i1y)] = i1;
+        this._hash[this._hashKey(i2x, i2y)] = i2;
 
         const maxTriangles = 2 * n - 5;
         const triangles = this.triangles = new Uint32Array(maxTriangles * 3);
@@ -211,8 +211,8 @@ export default class Delaunator {
             hullNext[i] = n;
 
             // save the two new edges in the hash table
-            this._hashEdge(i);
-            this._hashEdge(e);
+            this._hash[this._hashKey(x, y)] = i;
+            this._hash[this._hashKey(coords[2 * e], coords[2 * e + 1])] = e;
         }
 
         this.hull = new Uint32Array(hullSize);
@@ -225,10 +225,6 @@ export default class Delaunator {
         // trim typed triangle mesh arrays
         this.triangles = triangles.subarray(0, this.trianglesLen);
         this.halfedges = halfedges.subarray(0, this.trianglesLen);
-    }
-
-    _hashEdge(i) {
-        this._hash[this._hashKey(this.coords[2 * i], this.coords[2 * i + 1])] = i;
     }
 
     _hashKey(x, y) {
