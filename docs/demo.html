@@ -91,7 +91,6 @@ function draw() {
     ctx.clearRect(0, 0, w, h);
 
     var triangles = delaunay.triangles;
-    var hull = delaunay.hull;
 
     ctx.beginPath();
     for (var i = 0; i < triangles.length; i += 3) {
@@ -110,12 +109,10 @@ function draw() {
     // ctx.fill();
 
     ctx.beginPath();
-    ctx.moveTo(getX(hull.i), getY(hull.i));
-    var e = hull;
-    do {
-        ctx.lineTo(getX(e.next.i), getY(e.next.i));
-        e = e.next;
-    } while (e !== hull);
+    for (const i of delaunay.hull) {
+        ctx.lineTo(getX(i), getY(i));
+    }
+    ctx.closePath();
     ctx.lineWidth = 1;
     ctx.strokeStyle = 'red';
     ctx.stroke();

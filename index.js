@@ -115,19 +115,22 @@ export default class Delaunator {
         this._hashSize = Math.ceil(Math.sqrt(n));
         this._hash = new Int32Array(this._hashSize).fill(-1);
 
-        // initialize a circular doubly-linked list that will hold an advancing convex hull
-        this.hullPrev = new Uint32Array(n);
-        this.hullNext = new Uint32Array(n);
-        this.hullTri = new Uint32Array(n);
-        this.hullStart = 0;
+        // initialize arrays for tracking the edges of the advancing convex hull
+        const hullPrev = this.hullPrev = new Uint32Array(n); // edge to prev edge
+        const hullNext = this.hullNext = new Uint32Array(n); // edge to next edge
+        const hullTri = this.hullTri = new Uint32Array(n); // edge to adjacent triangle
 
-        this._insertNode(i0);
-        this._insertNode(i1, i0);
-        this._insertNode(i2, i1);
+        // set up the seed triangle as the starting hull
+        this.hullStart = i0;
+        let hullSize = 3;
 
-        this.hullTri[i0] = 0;
-        this.hullTri[i1] = 1;
-        this.hullTri[i2] = 2;
+        hullNext[i0] = hullPrev[i2] = i1;
+        hullNext[i1] = hullPrev[i0] = i2;
+        hullNext[i2] = hullPrev[i1] = i0;
+
+        hullTri[i0] = 0;
+        hullTri[i1] = 1;
+        hullTri[i2] = 2;
 
         this._hashEdge(i0);
         this._hashEdge(i1);
@@ -154,16 +157,12 @@ export default class Delaunator {
             // skip seed triangle points
             if (i === i0 || i === i1 || i === i2) continue;
 
-            const {hullPrev, hullNext, hullTri} = this;
-
             // find a visible edge on the convex hull using edge hash
-            const startKey = this._hashKey(x, y);
-            let key = startKey;
-            let start;
-            do {
-                start = this._hash[key];
-                key = (key + 1) % this._hashSize;
-            } while ((start === -1 || start === hullNext[start]) && key !== startKey);
+            let start = 0;
+            for (let j = 0, key = this._hashKey(x, y); j < this._hashSize; j++) {
+                start = this._hash[(key + j) % this._hashSize];
+                if (start !== -1 && start !== hullNext[start]) break;
+            }
 
             start = hullPrev[start];
             let e = start, q;
@@ -174,73 +173,58 @@ export default class Delaunator {
                     break;
                 }
             }
-            // likely a near-duplicate point; skip it
-            if (e === -1) continue;
-
-            const walkBack = e === start;
+            if (e === -1) continue; // likely a near-duplicate point; skip it
 
             // add the first triangle from the point
             let t = this._addTriangle(e, i, hullNext[e], -1, -1, hullTri[e]);
 
-            hullTri[e] = t; // keep track of boundary triangles on the hull
-            this._insertNode(i, e);
-
             // recursively flip triangles from the point until they satisfy the Delaunay condition
             hullTri[i] = this._legalize(t + 2);
+            hullTri[e] = t; // keep track of boundary triangles on the hull
+            hullSize++;
 
             // walk forward through the hull, adding more triangles and flipping recursively
-            e = hullNext[i];
-            while (q = hullNext[e], orient(x, y, coords[2 * e], coords[2 * e + 1], coords[2 * q], coords[2 * q + 1])) {
-                t = this._addTriangle(e, i, q, hullTri[hullPrev[e]], -1, hullTri[e]);
-                hullTri[hullPrev[e]] = this._legalize(t + 2);
-                this._removeNode(e);
-                e = q;
+            let n = hullNext[e];
+            while (q = hullNext[n], orient(x, y, coords[2 * n], coords[2 * n + 1], coords[2 * q], coords[2 * q + 1])) {
+                t = this._addTriangle(n, i, q, hullTri[i], -1, hullTri[n]);
+                hullTri[i] = this._legalize(t + 2);
+                hullNext[n] = n; // mark as removed
+                hullSize--;
+                n = q;
             }
 
-            if (walkBack) {
-                // walk backward from the other side, adding more triangles and flipping
-                e = hullPrev[i];
+            // walk backward from the other side, adding more triangles and flipping
+            if (e === start) {
                 while (q = hullPrev[e], orient(x, y, coords[2 * q], coords[2 * q + 1], coords[2 * e], coords[2 * e + 1])) {
                     t = this._addTriangle(q, i, e, -1, hullTri[e], hullTri[q]);
                     this._legalize(t + 2);
                     hullTri[q] = t;
-                    this._removeNode(e);
+                    hullNext[e] = e; // mark as removed
+                    hullSize--;
                     e = q;
                 }
             }
 
+            // update the hull indices
+            this.hullStart = hullPrev[i] = e;
+            hullNext[e] = hullPrev[n] = i;
+            hullNext[i] = n;
+
             // save the two new edges in the hash table
             this._hashEdge(i);
-            this._hashEdge(hullPrev[i]);
+            this._hashEdge(e);
         }
+
+        this.hull = new Uint32Array(hullSize);
+        for (let i = 0, e = this.hullStart; i < hullSize; i++) {
+            this.hull[i] = e;
+            e = hullNext[e];
+        }
+        this.hullPrev = this.hullNext = this.hullTri = null; // get rid of temporary arrays
 
         // trim typed triangle mesh arrays
         this.triangles = triangles.subarray(0, this.trianglesLen);
         this.halfedges = halfedges.subarray(0, this.trianglesLen);
-    }
-
-    _insertNode(i, prev) {
-        const {hullPrev, hullNext} = this;
-
-        if (prev === undefined) {
-            hullPrev[i] = i;
-            hullNext[i] = i;
-        } else {
-            hullNext[i] = hullNext[prev];
-            hullPrev[i] = prev;
-            hullPrev[hullNext[prev]] = i;
-            hullNext[prev] = i;
-        }
-        this.hullStart = i;
-    }
-
-    _removeNode(i) {
-        const {hullPrev, hullNext} = this;
-        const prev = hullPrev[i];
-        const next = hullNext[i];
-        hullNext[prev] = next;
-        hullPrev[next] = this.hullStart = prev;
-        hullNext[i] = i;
     }
 
     _hashEdge(i) {
