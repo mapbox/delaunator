@@ -1,6 +1,6 @@
-# delaunator [![Build Status](https://travis-ci.org/mapbox/delaunator.svg?branch=master)](https://travis-ci.org/mapbox/delaunator) [![](https://img.shields.io/badge/simply-awesome-brightgreen.svg)](https://github.com/mourner/projects)
+# Delaunator [![Build Status](https://travis-ci.org/mapbox/delaunator.svg?branch=master)](https://travis-ci.org/mapbox/delaunator) [![](https://img.shields.io/badge/simply-awesome-brightgreen.svg)](https://github.com/mourner/projects)
 
-A really fast JavaScript library for
+An incredibly fast JavaScript library for
 [Delaunay triangulation](https://en.wikipedia.org/wiki/Delaunay_triangulation) of 2D points.
 
 - [Interactive Demo](https://mapbox.github.io/delaunator/demo.html)
@@ -58,7 +58,7 @@ Constructs a delaunay triangulation object given a **typed array** of point coor
 
 #### delaunay.triangles
 
-A flat `Int32Array` array of triangle vertex indices (each group of three numbers forms a triangle).
+A `Uint32Array` array of triangle vertex indices (each group of three numbers forms a triangle).
 All triangles are directed counterclockwise.
 
 To get the coordinates of all triangles, use:
@@ -75,13 +75,17 @@ for (let i = 0; i < triangles.length; i += 3) {
 
 #### delaunay.halfedges
 
-A flat `Int32Array` array of triangle half-edge indices that allows you to traverse the triangulation.
+A `Int32Array` array of triangle half-edge indices that allows you to traverse the triangulation.
 `i`-th half-edge in the array corresponds to vertex `triangles[i]` the half-edge is coming from.
 `halfedges[i]` is the index of a twin half-edge in an adjacent triangle
 (or `-1` for outer half-edges on the convex hull).
 
 The flat array-based data structures might be counterintuitive,
 but they're one of the key reasons this library is fast.
+
+#### delaunay.hull
+
+A `Uint32Array` array of indices that reference points on the convex hull of the input data, counter-clockwise.
 
 ## Performance
 
@@ -90,7 +94,7 @@ Benchmark results against other Delaunay JS libraries
 
 &nbsp; | uniform 100k | gauss 100k | grid 100k | degen 100k | uniform 1&nbsp;million | gauss 1&nbsp;million | grid 1&nbsp;million | degen 1&nbsp;million
 :-- | --: | --: | --: | --: | --: | --: | --: | --:
-**delaunator** | 97ms | 70ms | 81ms | 48ms | 1.28s | 1s | 988ms | 917ms
+**delaunator** | 97ms | 70ms | 81ms | 40ms | 1.28s | 1.16s | 1.04s | 450ms
 [faster&#8209;delaunay](https://github.com/Bathlamos/delaunay-triangulation) | 473ms | 411ms | 272ms | 68ms | 4.27s | 4.62s | 4.3s | 810ms
 [incremental&#8209;delaunay](https://github.com/mikolalysenko/incremental-delaunay) | 547ms | 505ms | 172ms | 528ms | 5.9s | 6.08s | 2.11s | 6.09s
 [d3&#8209;voronoi](https://github.com/d3/d3-voronoi) | 972ms | 909ms | 358ms | 720ms | 15.04s | 13.86s | 5.55s | 11.13s
