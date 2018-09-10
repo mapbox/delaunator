@@ -53,8 +53,8 @@ Duplicate points are skipped.
 
 #### new Delaunator(coords)
 
-Constructs a delaunay triangulation object given a **typed array** of point coordinates of the form:
-`[x0, y0, x1, y1, ...]`.
+Constructs a delaunay triangulation object given an array of point coordinates of the form:
+`[x0, y0, x1, y1, ...]` (use a typed array for best performance).
 
 #### delaunay.triangles
 
@@ -86,6 +86,11 @@ but they're one of the key reasons this library is fast.
 #### delaunay.hull
 
 A `Uint32Array` array of indices that reference points on the convex hull of the input data, counter-clockwise.
+
+#### delaunay.coords
+
+An array of input coordinates in the form `[x0, y0, x1, y1, ....]`,
+of the type provided in the constructor (or `Float64Array` if you used `Delaunator.from`).
 
 ## Performance
 

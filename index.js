@@ -20,17 +20,29 @@ export default class Delaunator {
     }
 
     constructor(coords) {
+        const n = coords.length >> 1;
+        if (n > 0 && typeof coords[0] !== 'number') throw new Error('Expected coords to contain numbers.');
+
+        this.coords = coords;
+
+        // arrays that will store the triangulation graph
+        const maxTriangles = 2 * n - 5;
+        const triangles = this.triangles = new Uint32Array(maxTriangles * 3);
+        const halfedges = this.halfedges = new Int32Array(maxTriangles * 3);
+
+        // temporary arrays for tracking the edges of the advancing convex hull
+        this._hashSize = Math.ceil(Math.sqrt(n));
+        const hullPrev = this.hullPrev = new Uint32Array(n); // edge to prev edge
+        const hullNext = this.hullNext = new Uint32Array(n); // edge to next edge
+        const hullTri = this.hullTri = new Uint32Array(n); // edge to adjacent triangle
+        const hullHash = new Int32Array(this._hashSize).fill(-1); // angular edge hash
+
+        // populate an array of point indices; calculate input data bbox
+        const ids = new Uint32Array(n);
         let minX = Infinity;
         let minY = Infinity;
         let maxX = -Infinity;
         let maxY = -Infinity;
-
-        const n = coords.length >> 1;
-        const ids = this.ids = new Uint32Array(n);
-
-        if (n > 0 && typeof coords[0] !== 'number') throw new Error('Expected coords to contain numbers.');
-
-        this.coords = coords;
 
         for (let i = 0; i < n; i++) {
             const x = coords[2 * i];
@@ -41,14 +53,13 @@ export default class Delaunator {
             if (y > maxY) maxY = y;
             ids[i] = i;
         }
-
         const cx = (minX + maxX) / 2;
         const cy = (minY + maxY) / 2;
 
         let minDist = Infinity;
         let i0, i1, i2;
 
-        // pick a seed point close to the centroid
+        // pick a seed point close to the center
         for (let i = 0; i < n; i++) {
             const d = dist(cx, cy, coords[2 * i], coords[2 * i + 1]);
             if (d < minDist) {
@@ -111,15 +122,6 @@ export default class Delaunator {
         // sort the points by distance from the seed triangle circumcenter
         quicksort(ids, coords, 0, ids.length - 1, center.x, center.y);
 
-        // initialize a hash table for storing edges of the advancing convex hull
-        this._hashSize = Math.ceil(Math.sqrt(n));
-        this._hash = new Int32Array(this._hashSize).fill(-1);
-
-        // initialize arrays for tracking the edges of the advancing convex hull
-        const hullPrev = this.hullPrev = new Uint32Array(n); // edge to prev edge
-        const hullNext = this.hullNext = new Uint32Array(n); // edge to next edge
-        const hullTri = this.hullTri = new Uint32Array(n); // edge to adjacent triangle
-
         // set up the seed triangle as the starting hull
         this.hullStart = i0;
         let hullSize = 3;
@@ -132,16 +134,11 @@ export default class Delaunator {
         hullTri[i1] = 1;
         hullTri[i2] = 2;
 
-        this._hash[this._hashKey(i0x, i0y)] = i0;
-        this._hash[this._hashKey(i1x, i1y)] = i1;
-        this._hash[this._hashKey(i2x, i2y)] = i2;
-
-        const maxTriangles = 2 * n - 5;
-        const triangles = this.triangles = new Uint32Array(maxTriangles * 3);
-        const halfedges = this.halfedges = new Int32Array(maxTriangles * 3);
+        hullHash[this._hashKey(i0x, i0y)] = i0;
+        hullHash[this._hashKey(i1x, i1y)] = i1;
+        hullHash[this._hashKey(i2x, i2y)] = i2;
 
         this.trianglesLen = 0;
-
         this._addTriangle(i0, i1, i2, -1, -1, -1);
 
         for (let k = 0, xp, yp; k < ids.length; k++) {
@@ -160,7 +157,7 @@ export default class Delaunator {
             // find a visible edge on the convex hull using edge hash
             let start = 0;
             for (let j = 0, key = this._hashKey(x, y); j < this._hashSize; j++) {
-                start = this._hash[(key + j) % this._hashSize];
+                start = hullHash[(key + j) % this._hashSize];
                 if (start !== -1 && start !== hullNext[start]) break;
             }
 
@@ -211,8 +208,8 @@ export default class Delaunator {
             hullNext[i] = n;
 
             // save the two new edges in the hash table
-            this._hash[this._hashKey(x, y)] = i;
-            this._hash[this._hashKey(coords[2 * e], coords[2 * e + 1])] = e;
+            hullHash[this._hashKey(x, y)] = i;
+            hullHash[this._hashKey(coords[2 * e], coords[2 * e + 1])] = e;
         }
 
         this.hull = new Uint32Array(hullSize);
