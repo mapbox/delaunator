@@ -113,18 +113,28 @@ export default class Delaunator {
 
         // initialize a hash table for storing edges of the advancing convex hull
         this._hashSize = Math.ceil(Math.sqrt(n));
-        this._hash = new Array(this._hashSize);
+        this._hash = new Int32Array(this._hashSize).fill(-1);
 
-        // initialize a circular doubly-linked list that will hold an advancing convex hull
-        let e = this.hull = insertNode(coords, i0);
-        this._hashEdge(e);
-        e.t = 0;
-        e = insertNode(coords, i1, e);
-        this._hashEdge(e);
-        e.t = 1;
-        e = insertNode(coords, i2, e);
-        this._hashEdge(e);
-        e.t = 2;
+        // initialize arrays for tracking the edges of the advancing convex hull
+        const hullPrev = this.hullPrev = new Uint32Array(n); // edge to prev edge
+        const hullNext = this.hullNext = new Uint32Array(n); // edge to next edge
+        const hullTri = this.hullTri = new Uint32Array(n); // edge to adjacent triangle
+
+        // set up the seed triangle as the starting hull
+        this.hullStart = i0;
+        let hullSize = 3;
+
+        hullNext[i0] = hullPrev[i2] = i1;
+        hullNext[i1] = hullPrev[i0] = i2;
+        hullNext[i2] = hullPrev[i1] = i0;
+
+        hullTri[i0] = 0;
+        hullTri[i1] = 1;
+        hullTri[i2] = 2;
+
+        this._hash[this._hashKey(i0x, i0y)] = i0;
+        this._hash[this._hashKey(i1x, i1y)] = i1;
+        this._hash[this._hashKey(i2x, i2y)] = i2;
 
         const maxTriangles = 2 * n - 5;
         const triangles = this.triangles = new Uint32Array(maxTriangles * 3);
@@ -148,70 +158,73 @@ export default class Delaunator {
             if (i === i0 || i === i1 || i === i2) continue;
 
             // find a visible edge on the convex hull using edge hash
-            const startKey = this._hashKey(x, y);
-            let key = startKey;
-            let start;
-            do {
-                start = this._hash[key];
-                key = (key + 1) % this._hashSize;
-            } while ((!start || start.removed) && key !== startKey);
+            let start = 0;
+            for (let j = 0, key = this._hashKey(x, y); j < this._hashSize; j++) {
+                start = this._hash[(key + j) % this._hashSize];
+                if (start !== -1 && start !== hullNext[start]) break;
+            }
 
-            start = start.prev;
-            e = start;
-            while (!orient(x, y, e.x, e.y, e.next.x, e.next.y)) {
-                e = e.next;
+            start = hullPrev[start];
+            let e = start, q;
+            while (q = hullNext[e], !orient(x, y, coords[2 * e], coords[2 * e + 1], coords[2 * q], coords[2 * q + 1])) {
+                e = q;
                 if (e === start) {
-                    e = null;
+                    e = -1;
                     break;
                 }
             }
-            // likely a near-duplicate point; skip it
-            if (!e) continue;
-
-            const walkBack = e === start;
+            if (e === -1) continue; // likely a near-duplicate point; skip it
 
             // add the first triangle from the point
-            let t = this._addTriangle(e.i, i, e.next.i, -1, -1, e.t);
-
-            e.t = t; // keep track of boundary triangles on the hull
-            e = insertNode(coords, i, e);
+            let t = this._addTriangle(e, i, hullNext[e], -1, -1, hullTri[e]);
 
             // recursively flip triangles from the point until they satisfy the Delaunay condition
-            e.t = this._legalize(t + 2);
+            hullTri[i] = this._legalize(t + 2);
+            hullTri[e] = t; // keep track of boundary triangles on the hull
+            hullSize++;
 
             // walk forward through the hull, adding more triangles and flipping recursively
-            let q = e.next;
-            while (orient(x, y, q.x, q.y, q.next.x, q.next.y)) {
-                t = this._addTriangle(q.i, i, q.next.i, q.prev.t, -1, q.t);
-                q.prev.t = this._legalize(t + 2);
-                this.hull = removeNode(q);
-                q = q.next;
+            let n = hullNext[e];
+            while (q = hullNext[n], orient(x, y, coords[2 * n], coords[2 * n + 1], coords[2 * q], coords[2 * q + 1])) {
+                t = this._addTriangle(n, i, q, hullTri[i], -1, hullTri[n]);
+                hullTri[i] = this._legalize(t + 2);
+                hullNext[n] = n; // mark as removed
+                hullSize--;
+                n = q;
             }
 
-            if (walkBack) {
-                // walk backward from the other side, adding more triangles and flipping
-                q = e.prev;
-                while (orient(x, y, q.prev.x, q.prev.y, q.x, q.y)) {
-                    t = this._addTriangle(q.prev.i, i, q.i, -1, q.t, q.prev.t);
+            // walk backward from the other side, adding more triangles and flipping
+            if (e === start) {
+                while (q = hullPrev[e], orient(x, y, coords[2 * q], coords[2 * q + 1], coords[2 * e], coords[2 * e + 1])) {
+                    t = this._addTriangle(q, i, e, -1, hullTri[e], hullTri[q]);
                     this._legalize(t + 2);
-                    q.prev.t = t;
-                    this.hull = removeNode(q);
-                    q = q.prev;
+                    hullTri[q] = t;
+                    hullNext[e] = e; // mark as removed
+                    hullSize--;
+                    e = q;
                 }
             }
 
+            // update the hull indices
+            this.hullStart = hullPrev[i] = e;
+            hullNext[e] = hullPrev[n] = i;
+            hullNext[i] = n;
+
             // save the two new edges in the hash table
-            this._hashEdge(e);
-            this._hashEdge(e.prev);
+            this._hash[this._hashKey(x, y)] = i;
+            this._hash[this._hashKey(coords[2 * e], coords[2 * e + 1])] = e;
         }
+
+        this.hull = new Uint32Array(hullSize);
+        for (let i = 0, e = this.hullStart; i < hullSize; i++) {
+            this.hull[i] = e;
+            e = hullNext[e];
+        }
+        this.hullPrev = this.hullNext = this.hullTri = null; // get rid of temporary arrays
 
         // trim typed triangle mesh arrays
         this.triangles = triangles.subarray(0, this.trianglesLen);
         this.halfedges = halfedges.subarray(0, this.trianglesLen);
-    }
-
-    _hashEdge(e) {
-        this._hash[this._hashKey(e.x, e.y)] = e;
     }
 
     _hashKey(x, y) {
@@ -266,14 +279,14 @@ export default class Delaunator {
 
             // edge swapped on the other side of the hull (rare); fix the halfedge reference
             if (hbl === -1) {
-                let e = this.hull;
+                let e = this.hullStart;
                 do {
-                    if (e.t === bl) {
-                        e.t = a;
+                    if (this.hullTri[e] === bl) {
+                        this.hullTri[e] = a;
                         break;
                     }
-                    e = e.next;
-                } while (e !== this.hull);
+                    e = this.hullNext[e];
+                } while (e !== this.hullStart);
             }
             this._link(a, hbl);
             this._link(b, halfedges[ar]);
@@ -374,38 +387,6 @@ function circumcenter(ax, ay, bx, by, cx, cy) {
     const y = ay + (dx * cl - ex * bl) * 0.5 / d;
 
     return {x, y};
-}
-
-// create a new node in a doubly linked list
-function insertNode(coords, i, prev) {
-    const node = {
-        i,
-        x: coords[2 * i],
-        y: coords[2 * i + 1],
-        t: 0,
-        prev: null,
-        next: null,
-        removed: false
-    };
-
-    if (!prev) {
-        node.prev = node;
-        node.next = node;
-
-    } else {
-        node.next = prev.next;
-        node.prev = prev;
-        prev.next.prev = node;
-        prev.next = node;
-    }
-    return node;
-}
-
-function removeNode(node) {
-    node.prev.next = node.next;
-    node.next.prev = node.prev;
-    node.removed = true;
-    return node.prev;
 }
 
 function quicksort(ids, coords, left, right, cx, cy) {

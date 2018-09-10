@@ -99,14 +99,11 @@ function validate(t, points) {
 
     // validate triangulation
     const hullAreas = [];
-    let e = d.hull;
-    do {
-        const [x0, y0] = points[e.prev.i];
-        const [x, y] = points[e.i];
+    for (let i = 0, len = d.hull.length, j = len - 1; i < len; j = i++) {
+        const [x0, y0] = points[d.hull[j]];
+        const [x, y] = points[d.hull[i]];
         hullAreas.push((x - x0) * (y + y0));
-        e = e.next;
-    } while (e !== d.hull);
-
+    }
     const hullArea = sum(hullAreas);
 
     const triangleAreas = [];
