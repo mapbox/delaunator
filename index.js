@@ -3,10 +3,7 @@ const EPSILON = Math.pow(2, -52);
 
 export default class Delaunator {
 
-    static from(points, getX, getY) {
-        if (!getX) getX = defaultGetX;
-        if (!getY) getY = defaultGetY;
-
+    static from(points, getX = defaultGetX, getY = defaultGetY) {
         const n = points.length;
         const coords = new Float64Array(n * 2);
 
@@ -362,12 +359,12 @@ function circumradius(ax, ay, bx, by, cx, cy) {
 
     const bl = dx * dx + dy * dy;
     const cl = ex * ex + ey * ey;
-    const d = dx * ey - dy * ex;
+    const d = 0.5 / (dx * ey - dy * ex);
 
-    const x = (ey * bl - dy * cl) * 0.5 / d;
-    const y = (dx * cl - ex * bl) * 0.5 / d;
+    const x = (ey * bl - dy * cl) * d;
+    const y = (dx * cl - ex * bl) * d;
 
-    return bl && cl && d && (x * x + y * y) || Infinity;
+    return x * x + y * y;
 }
 
 function circumcenter(ax, ay, bx, by, cx, cy) {
@@ -378,10 +375,10 @@ function circumcenter(ax, ay, bx, by, cx, cy) {
 
     const bl = dx * dx + dy * dy;
     const cl = ex * ex + ey * ey;
-    const d = dx * ey - dy * ex;
+    const d = 0.5 / (dx * ey - dy * ex);
 
-    const x = ax + (ey * bl - dy * cl) * 0.5 / d;
-    const y = ay + (dx * cl - ex * bl) * 0.5 / d;
+    const x = ax + (ey * bl - dy * cl) * d;
+    const y = ay + (dx * cl - ex * bl) * d;
 
     return {x, y};
 }
@@ -428,7 +425,7 @@ function quicksort(ids, coords, left, right, cx, cy) {
 function compare(coords, i, j, cx, cy) {
     const d1 = dist(coords[2 * i], coords[2 * i + 1], cx, cy);
     const d2 = dist(coords[2 * j], coords[2 * j + 1], cx, cy);
-    return (d1 - d2) || (coords[2 * i] - coords[2 * j]) || (coords[2 * i + 1] - coords[2 * j + 1]);
+    return (d1 - d2) || (i - j);
 }
 
 function swap(arr, i, j) {
