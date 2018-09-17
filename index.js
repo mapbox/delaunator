@@ -116,8 +116,13 @@ export default class Delaunator {
         this._cx = center.x;
         this._cy = center.y;
 
+        const dists = new Float64Array(n);
+        for (let i = 0; i < n; i++) {
+            dists[i] = dist(coords[2 * i], coords[2 * i + 1], center.x, center.y);
+        }
+
         // sort the points by distance from the seed triangle circumcenter
-        quicksort(ids, coords, 0, ids.length - 1, center.x, center.y);
+        quicksort(ids, dists, 0, n - 1);
 
         // set up the seed triangle as the starting hull
         this.hullStart = i0;
@@ -383,29 +388,29 @@ function circumcenter(ax, ay, bx, by, cx, cy) {
     return {x, y};
 }
 
-function quicksort(ids, coords, left, right, cx, cy) {
-    let i, j, temp;
-
+function quicksort(ids, dists, left, right) {
     if (right - left <= 20) {
-        for (i = left + 1; i <= right; i++) {
-            temp = ids[i];
-            j = i - 1;
-            while (j >= left && compare(coords, ids[j], temp, cx, cy) > 0) ids[j + 1] = ids[j--];
+        for (let i = left + 1; i <= right; i++) {
+            const temp = ids[i];
+            const tempDist = dists[temp];
+            let j = i - 1;
+            while (j >= left && dists[ids[j]] > tempDist) ids[j + 1] = ids[j--];
             ids[j + 1] = temp;
         }
     } else {
         const median = (left + right) >> 1;
-        i = left + 1;
-        j = right;
+        let i = left + 1;
+        let j = right;
         swap(ids, median, i);
-        if (compare(coords, ids[left], ids[right], cx, cy) > 0) swap(ids, left, right);
-        if (compare(coords, ids[i], ids[right], cx, cy) > 0) swap(ids, i, right);
-        if (compare(coords, ids[left], ids[i], cx, cy) > 0) swap(ids, left, i);
+        if (dists[ids[left]] > dists[ids[right]]) swap(ids, left, right);
+        if (dists[ids[i]] > dists[ids[right]]) swap(ids, i, right);
+        if (dists[ids[left]] > dists[ids[i]]) swap(ids, left, i);
 
-        temp = ids[i];
+        const temp = ids[i];
+        const tempDist = dists[temp];
         while (true) {
-            do i++; while (compare(coords, ids[i], temp, cx, cy) < 0);
-            do j--; while (compare(coords, ids[j], temp, cx, cy) > 0);
+            do i++; while (dists[ids[i]] < tempDist);
+            do j--; while (dists[ids[j]] > tempDist);
             if (j < i) break;
             swap(ids, i, j);
         }
@@ -413,19 +418,13 @@ function quicksort(ids, coords, left, right, cx, cy) {
         ids[j] = temp;
 
         if (right - i + 1 >= j - left) {
-            quicksort(ids, coords, i, right, cx, cy);
-            quicksort(ids, coords, left, j - 1, cx, cy);
+            quicksort(ids, dists, i, right);
+            quicksort(ids, dists, left, j - 1);
         } else {
-            quicksort(ids, coords, left, j - 1, cx, cy);
-            quicksort(ids, coords, i, right, cx, cy);
+            quicksort(ids, dists, left, j - 1);
+            quicksort(ids, dists, i, right);
         }
     }
-}
-
-function compare(coords, i, j, cx, cy) {
-    const d1 = dist(coords[2 * i], coords[2 * i + 1], cx, cy);
-    const d2 = dist(coords[2 * j], coords[2 * j + 1], cx, cy);
-    return (d1 - d2) || (i - j);
 }
 
 function swap(arr, i, j) {
