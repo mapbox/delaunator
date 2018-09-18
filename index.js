@@ -392,30 +392,37 @@ function quicksort(ids, dists, left, right) {
     if (right - left <= 20) {
         for (let i = left + 1; i <= right; i++) {
             const temp = ids[i];
-            const tempDist = dists[temp];
+            const tempDist = dists[i];
             let j = i - 1;
-            while (j >= left && dists[ids[j]] > tempDist) ids[j + 1] = ids[j--];
+            while (j >= left && dists[j] > tempDist) {
+                ids[j + 1] = ids[j];
+                dists[j + 1] = dists[j];
+                j--;
+            }
             ids[j + 1] = temp;
+            dists[j + 1] = tempDist;
         }
     } else {
         const median = (left + right) >> 1;
         let i = left + 1;
         let j = right;
-        swap(ids, median, i);
-        if (dists[ids[left]] > dists[ids[right]]) swap(ids, left, right);
-        if (dists[ids[i]] > dists[ids[right]]) swap(ids, i, right);
-        if (dists[ids[left]] > dists[ids[i]]) swap(ids, left, i);
+        swap(ids, dists, median, i);
+        if (dists[left] > dists[right]) swap(ids, dists, left, right);
+        if (dists[i] > dists[right]) swap(ids, dists, i, right);
+        if (dists[left] > dists[i]) swap(ids, dists, left, i);
 
         const temp = ids[i];
-        const tempDist = dists[temp];
+        const tempDist = dists[i];
         while (true) {
-            do i++; while (dists[ids[i]] < tempDist);
-            do j--; while (dists[ids[j]] > tempDist);
+            do i++; while (dists[i] < tempDist);
+            do j--; while (dists[j] > tempDist);
             if (j < i) break;
-            swap(ids, i, j);
+            swap(ids, dists, i, j);
         }
         ids[left + 1] = ids[j];
+        dists[left + 1] = dists[j];
         ids[j] = temp;
+        dists[j] = tempDist;
 
         if (right - i + 1 >= j - left) {
             quicksort(ids, dists, i, right);
@@ -427,10 +434,14 @@ function quicksort(ids, dists, left, right) {
     }
 }
 
-function swap(arr, i, j) {
-    const tmp = arr[i];
-    arr[i] = arr[j];
-    arr[j] = tmp;
+function swap(ids, dists, i, j) {
+    const id = ids[i];
+    ids[i] = ids[j];
+    ids[j] = id;
+
+    const d = dists[i];
+    dists[i] = dists[j];
+    dists[j] = d;
 }
 
 function defaultGetX(p) {
