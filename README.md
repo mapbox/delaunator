@@ -12,10 +12,9 @@ Projects based on Delaunator:
 - [d3-geo-voronoi](https://github.com/Fil/d3-geo-voronoi) for Delaunay triangulations and Voronoi diagrams on a sphere (e.g. for geographic locations).
 
 Ports to other languages:
-
-- [fogleman/delaunay](https://github.com/fogleman/delaunay) (Go)
-- [delaunator-rs](https://github.com/mourner/delaunator-rs) (Rust, a work in progress)
-- [delaunator-cpp](https://github.com/delfrrr/delaunator-cpp) (C++, a work in progress)
+[delaunator-rs](https://github.com/mourner/delaunator-rs) (Rust),
+[fogleman/delaunay](https://github.com/fogleman/delaunay) (Go),
+[delaunator-cpp](https://github.com/delfrrr/delaunator-cpp) (C++).
 
 <img src="delaunator.png" alt="Delaunay triangulation example" width="600" />
 
@@ -44,8 +43,8 @@ const Delaunator = require('delaunator');
 Or use a browser build directly:
 
 ```html
-<script src="https://unpkg.com/delaunator@3.0.1/delaunator.min.js"></script> <!-- minified build -->
-<script src="https://unpkg.com/delaunator@3.0.1/delaunator.js"></script> <!-- dev build -->
+<script src="https://unpkg.com/delaunator@3.0.2/delaunator.min.js"></script> <!-- minified build -->
+<script src="https://unpkg.com/delaunator@3.0.2/delaunator.js"></script> <!-- dev build -->
 ```
 
 ## API Reference
