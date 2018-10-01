@@ -1,5 +1,6 @@
 
 const EPSILON = Math.pow(2, -52);
+const EDGE_STACK = new Uint32Array(1024);
 
 export default class Delaunator {
 
@@ -233,68 +234,82 @@ export default class Delaunator {
     _legalize(a) {
         const {triangles, coords, halfedges} = this;
 
-        const b = halfedges[a];
+        let i = 0;
+        let ar = 0;
 
-        /* if the pair of triangles doesn't satisfy the Delaunay condition
-         * (p1 is inside the circumcircle of [p0, pl, pr]), flip them,
-         * then do the same check/flip recursively for the new pair of triangles
-         *
-         *           pl                    pl
-         *          /||\                  /  \
-         *       al/ || \bl            al/    \a
-         *        /  ||  \              /      \
-         *       /  a||b  \    flip    /___ar___\
-         *     p0\   ||   /p1   =>   p0\---bl---/p1
-         *        \  ||  /              \      /
-         *       ar\ || /br             b\    /br
-         *          \||/                  \  /
-         *           pr                    pr
-         */
-        const a0 = a - a % 3;
-        const b0 = b - b % 3;
+        // recursion eliminated with a fixed-size stack
+        while (i >= 0) {
+            const b = halfedges[a];
 
-        const al = a0 + (a + 1) % 3;
-        const ar = a0 + (a + 2) % 3;
-        const bl = b0 + (b + 2) % 3;
+            /* if the pair of triangles doesn't satisfy the Delaunay condition
+             * (p1 is inside the circumcircle of [p0, pl, pr]), flip them,
+             * then do the same check/flip recursively for the new pair of triangles
+             *
+             *           pl                    pl
+             *          /||\                  /  \
+             *       al/ || \bl            al/    \a
+             *        /  ||  \              /      \
+             *       /  a||b  \    flip    /___ar___\
+             *     p0\   ||   /p1   =>   p0\---bl---/p1
+             *        \  ||  /              \      /
+             *       ar\ || /br             b\    /br
+             *          \||/                  \  /
+             *           pr                    pr
+             */
+            const a0 = a - a % 3;
+            ar = a0 + (a + 2) % 3;
 
-        if (b === -1) return ar;
-
-        const p0 = triangles[ar];
-        const pr = triangles[a];
-        const pl = triangles[al];
-        const p1 = triangles[bl];
-
-        const illegal = inCircle(
-            coords[2 * p0], coords[2 * p0 + 1],
-            coords[2 * pr], coords[2 * pr + 1],
-            coords[2 * pl], coords[2 * pl + 1],
-            coords[2 * p1], coords[2 * p1 + 1]);
-
-        if (illegal) {
-            triangles[a] = p1;
-            triangles[b] = p0;
-
-            const hbl = halfedges[bl];
-
-            // edge swapped on the other side of the hull (rare); fix the halfedge reference
-            if (hbl === -1) {
-                let e = this.hullStart;
-                do {
-                    if (this.hullTri[e] === bl) {
-                        this.hullTri[e] = a;
-                        break;
-                    }
-                    e = this.hullNext[e];
-                } while (e !== this.hullStart);
+            if (b === -1) {
+                i--;
+                if (i >= 0) a = EDGE_STACK[i];
+                continue;
             }
-            this._link(a, hbl);
-            this._link(b, halfedges[ar]);
-            this._link(ar, bl);
 
-            const br = b0 + (b + 1) % 3;
+            const b0 = b - b % 3;
+            const al = a0 + (a + 1) % 3;
+            const bl = b0 + (b + 2) % 3;
 
-            this._legalize(a);
-            return this._legalize(br);
+            const p0 = triangles[ar];
+            const pr = triangles[a];
+            const pl = triangles[al];
+            const p1 = triangles[bl];
+
+            const illegal = inCircle(
+                coords[2 * p0], coords[2 * p0 + 1],
+                coords[2 * pr], coords[2 * pr + 1],
+                coords[2 * pl], coords[2 * pl + 1],
+                coords[2 * p1], coords[2 * p1 + 1]);
+
+            if (illegal) {
+                triangles[a] = p1;
+                triangles[b] = p0;
+
+                const hbl = halfedges[bl];
+
+                // edge swapped on the other side of the hull (rare); fix the halfedge reference
+                if (hbl === -1) {
+                    let e = this.hullStart;
+                    do {
+                        if (this.hullTri[e] === bl) {
+                            this.hullTri[e] = a;
+                            break;
+                        }
+                        e = this.hullNext[e];
+                    } while (e !== this.hullStart);
+                }
+                this._link(a, hbl);
+                this._link(b, halfedges[ar]);
+                this._link(ar, bl);
+
+                const br = b0 + (b + 1) % 3;
+
+                if (i < EDGE_STACK.length) {
+                    EDGE_STACK[i++] = br;
+                }
+            } else {
+                i--;
+                if (i >= 0) a = EDGE_STACK[i];
+            }
         }
 
         return ar;
