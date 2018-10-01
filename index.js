@@ -238,7 +238,7 @@ export default class Delaunator {
         let ar = 0;
 
         // recursion eliminated with a fixed-size stack
-        while (i >= 0) {
+        while (true) {
             const b = halfedges[a];
 
             /* if the pair of triangles doesn't satisfy the Delaunay condition
@@ -260,8 +260,8 @@ export default class Delaunator {
             ar = a0 + (a + 2) % 3;
 
             if (b === -1) { // convex hull edge
-                i--;
-                if (i >= 0) a = EDGE_STACK[i];
+                if (i === 0) break;
+                a = EDGE_STACK[--i];
                 continue;
             }
 
@@ -308,8 +308,8 @@ export default class Delaunator {
                     EDGE_STACK[i++] = br;
                 }
             } else {
-                i--;
-                if (i >= 0) a = EDGE_STACK[i];
+                if (i === 0) break;
+                a = EDGE_STACK[--i];
             }
         }
 
