@@ -1,6 +1,6 @@
 
 const EPSILON = Math.pow(2, -52);
-const EDGE_STACK = new Uint32Array(1024);
+const EDGE_STACK = new Uint32Array(512);
 
 export default class Delaunator {
 
@@ -259,7 +259,7 @@ export default class Delaunator {
             const a0 = a - a % 3;
             ar = a0 + (a + 2) % 3;
 
-            if (b === -1) {
+            if (b === -1) { // convex hull edge
                 i--;
                 if (i >= 0) a = EDGE_STACK[i];
                 continue;
@@ -303,6 +303,7 @@ export default class Delaunator {
 
                 const br = b0 + (b + 1) % 3;
 
+                // don't worry about hitting the cap: it can only happen on extremely degenerate input
                 if (i < EDGE_STACK.length) {
                     EDGE_STACK[i++] = br;
                 }

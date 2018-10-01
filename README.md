@@ -103,7 +103,7 @@ Benchmark results against other Delaunay JS libraries
 
 &nbsp; | uniform 100k | gauss 100k | grid 100k | degen 100k | uniform 1&nbsp;million | gauss 1&nbsp;million | grid 1&nbsp;million | degen 1&nbsp;million
 :-- | --: | --: | --: | --: | --: | --: | --: | --:
-**delaunator** | 95ms | 75ms | 68ms | 31ms | 1.15s | 1.11s | 979ms | 314ms
+**delaunator** | 82ms | 61ms | 66ms | 25ms | 1.07s | 950ms | 830ms | 278ms
 [faster&#8209;delaunay](https://github.com/Bathlamos/delaunay-triangulation) | 473ms | 411ms | 272ms | 68ms | 4.27s | 4.62s | 4.3s | 810ms
 [incremental&#8209;delaunay](https://github.com/mikolalysenko/incremental-delaunay) | 547ms | 505ms | 172ms | 528ms | 5.9s | 6.08s | 2.11s | 6.09s
 [d3&#8209;voronoi](https://github.com/d3/d3-voronoi) | 972ms | 909ms | 358ms | 720ms | 15.04s | 13.86s | 5.55s | 11.13s
