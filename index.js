@@ -6,22 +6,24 @@ export default class Delaunator {
 
     static from(points, getX = defaultGetX, getY = defaultGetY) {
         const n = points.length;
-        const coords = new Float64Array(n * 2);
+        const coordsX = new Float64Array(n);
+        const coordsY = new Float64Array(n);
 
         for (let i = 0; i < n; i++) {
             const p = points[i];
-            coords[2 * i] = getX(p);
-            coords[2 * i + 1] = getY(p);
+            coordsX[i] = getX(p);
+            coordsY[i] = getY(p);
         }
 
-        return new Delaunator(coords);
+        return new Delaunator(coordsX, coordsY);
     }
 
-    constructor(coords) {
-        const n = coords.length >> 1;
-        if (n > 0 && typeof coords[0] !== 'number') throw new Error('Expected coords to contain numbers.');
+    constructor(coordsX, coordsY) {
+        const n = coordsX.length >> 1;
+        if (n > 0 && typeof coordsX[0] !== 'number') throw new Error('Expected coords to contain numbers.');
 
-        this.coords = coords;
+        this.coordsX = coordsX;
+        this.coordsY = coordsY;
 
         // arrays that will store the triangulation graph
         const maxTriangles = 2 * n - 5;
@@ -43,8 +45,8 @@ export default class Delaunator {
         let maxY = -Infinity;
 
         for (let i = 0; i < n; i++) {
-            const x = coords[2 * i];
-            const y = coords[2 * i + 1];
+            const x = coordsX[i];
+            const y = coordsY[i];
             if (x < minX) minX = x;
             if (y < minY) minY = y;
             if (x > maxX) maxX = x;
@@ -59,42 +61,42 @@ export default class Delaunator {
 
         // pick a seed point close to the center
         for (let i = 0; i < n; i++) {
-            const d = dist(cx, cy, coords[2 * i], coords[2 * i + 1]);
+            const d = dist(cx, cy, coordsX[i], coordsY[i]);
             if (d < minDist) {
                 i0 = i;
                 minDist = d;
             }
         }
-        const i0x = coords[2 * i0];
-        const i0y = coords[2 * i0 + 1];
+        const i0x = coordsX[i0];
+        const i0y = coordsY[i0];
 
         minDist = Infinity;
 
         // find the point closest to the seed
         for (let i = 0; i < n; i++) {
             if (i === i0) continue;
-            const d = dist(i0x, i0y, coords[2 * i], coords[2 * i + 1]);
+            const d = dist(i0x, i0y, coordsX[i], coordsY[i]);
             if (d < minDist && d > 0) {
                 i1 = i;
                 minDist = d;
             }
         }
-        let i1x = coords[2 * i1];
-        let i1y = coords[2 * i1 + 1];
+        let i1x = coordsX[i1];
+        let i1y = coordsY[i1];
 
         let minRadius = Infinity;
 
         // find the third point which forms the smallest circumcircle with the first two
         for (let i = 0; i < n; i++) {
             if (i === i0 || i === i1) continue;
-            const r = circumradius(i0x, i0y, i1x, i1y, coords[2 * i], coords[2 * i + 1]);
+            const r = circumradius(i0x, i0y, i1x, i1y, coordsX[i], coordsY[i]);
             if (r < minRadius) {
                 i2 = i;
                 minRadius = r;
             }
         }
-        let i2x = coords[2 * i2];
-        let i2y = coords[2 * i2 + 1];
+        let i2x = coordsX[i2];
+        let i2y = coordsY[i2];
 
         if (minRadius === Infinity) {
             throw new Error('No Delaunay triangulation exists for this input.');
@@ -119,7 +121,7 @@ export default class Delaunator {
 
         const dists = new Float64Array(n);
         for (let i = 0; i < n; i++) {
-            dists[i] = dist(coords[2 * i], coords[2 * i + 1], center.x, center.y);
+            dists[i] = dist(coordsX[i], coordsY[i], center.x, center.y);
         }
 
         // sort the points by distance from the seed triangle circumcenter
@@ -146,8 +148,8 @@ export default class Delaunator {
 
         for (let k = 0, xp, yp; k < ids.length; k++) {
             const i = ids[k];
-            const x = coords[2 * i];
-            const y = coords[2 * i + 1];
+            const x = coordsX[i];
+            const y = coordsY[i];
 
             // skip near-duplicate points
             if (k > 0 && Math.abs(x - xp) <= EPSILON && Math.abs(y - yp) <= EPSILON) continue;
@@ -166,7 +168,7 @@ export default class Delaunator {
 
             start = hullPrev[start];
             let e = start, q;
-            while (q = hullNext[e], !orient(x, y, coords[2 * e], coords[2 * e + 1], coords[2 * q], coords[2 * q + 1])) {
+            while (q = hullNext[e], !orient(x, y, coordsX[e], coordsY[e], coordsX[q], coordsY[q])) {
                 e = q;
                 if (e === start) {
                     e = -1;
@@ -185,7 +187,7 @@ export default class Delaunator {
 
             // walk forward through the hull, adding more triangles and flipping recursively
             let n = hullNext[e];
-            while (q = hullNext[n], orient(x, y, coords[2 * n], coords[2 * n + 1], coords[2 * q], coords[2 * q + 1])) {
+            while (q = hullNext[n], orient(x, y, coordsX[n], coordsY[n], coordsX[q], coordsY[q])) {
                 t = this._addTriangle(n, i, q, hullTri[i], -1, hullTri[n]);
                 hullTri[i] = this._legalize(t + 2);
                 hullNext[n] = n; // mark as removed
@@ -195,7 +197,7 @@ export default class Delaunator {
 
             // walk backward from the other side, adding more triangles and flipping
             if (e === start) {
-                while (q = hullPrev[e], orient(x, y, coords[2 * q], coords[2 * q + 1], coords[2 * e], coords[2 * e + 1])) {
+                while (q = hullPrev[e], orient(x, y, coordsX[q], coordsY[q], coordsX[e], coordsY[e])) {
                     t = this._addTriangle(q, i, e, -1, hullTri[e], hullTri[q]);
                     this._legalize(t + 2);
                     hullTri[q] = t;
@@ -212,7 +214,7 @@ export default class Delaunator {
 
             // save the two new edges in the hash table
             hullHash[this._hashKey(x, y)] = i;
-            hullHash[this._hashKey(coords[2 * e], coords[2 * e + 1])] = e;
+            hullHash[this._hashKey(coordsX[e], coordsY[e])] = e;
         }
 
         this.hull = new Uint32Array(hullSize);
@@ -275,10 +277,10 @@ export default class Delaunator {
             const p1 = triangles[bl];
 
             const illegal = inCircle(
-                coords[2 * p0], coords[2 * p0 + 1],
-                coords[2 * pr], coords[2 * pr + 1],
-                coords[2 * pl], coords[2 * pl + 1],
-                coords[2 * p1], coords[2 * p1 + 1]);
+                this.coordsX[p0], this.coordsY[p0],
+                this.coordsX[pr], this.coordsY[pr],
+                this.coordsX[pl], this.coordsY[pl],
+                this.coordsX[p1], this.coordsY[p1]);
 
             if (illegal) {
                 triangles[a] = p1;
