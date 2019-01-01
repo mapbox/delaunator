@@ -234,7 +234,7 @@ export default class Delaunator {
     }
 
     _legalize(a) {
-        const {triangles, coords, halfedges} = this;
+        const {triangles, halfedges} = this;
 
         let i = 0;
         let ar = 0;
