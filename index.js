@@ -24,7 +24,7 @@ export default class Delaunator {
         this.coords = coords;
 
         // arrays that will store the triangulation graph
-        const maxTriangles = 2 * n - 5;
+        const maxTriangles = Math.max(2 * n - 5, 0);
         const triangles = this.triangles = new Uint32Array(maxTriangles * 3);
         const halfedges = this.halfedges = new Int32Array(maxTriangles * 3);
 
@@ -97,7 +97,36 @@ export default class Delaunator {
         let i2y = coords[2 * i2 + 1];
 
         if (minRadius === Infinity) {
-            throw new Error('No Delaunay triangulation exists for this input.');
+            // order collinear points
+            // and return the list as a hull
+            let a = 0, b = 0;
+            for (let i = 1; i < n; i++) {
+                if ((a = coords[2 * i] - coords[0]) || (b = coords[2 * i + 1] - coords[1])) {
+                    const norm = Math.sqrt(a * a + b * b);
+                    a /= norm;
+                    b /= norm;
+                    continue;
+                }
+            }
+            const dists = new Float64Array(n);
+            for (let i = 0; i < n; i++) {
+                dists[i] = a * (coords[2 * i] - coords[0]) + b * (coords[2 * i + 1] - coords[1]);
+            }
+            quicksort(ids, dists, 0, n - 1);
+            const hull = new Uint32Array(n);
+            let j = 0;
+            for (let i = 0, d0 = -Infinity; i < n; i++) {
+                const d = dists[ids[i]];
+                if (d > d0) {
+                    hull[j++] = ids[i];
+                    d0 = d;
+                }
+            }
+            this.hull = hull.subarray(0, j);
+            this.triangles = new Uint32Array(0);
+            this.halfedges = new Uint32Array(0);
+            this._hashSize = this.hullPrev = this.hullNext = this.hullTri = null;
+            return;
         }
 
         // swap the order of the seed points for counter-clockwise orientation
