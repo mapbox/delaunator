@@ -59,23 +59,23 @@ test('robustness', (t) => {
     t.end();
 });
 
-if (false) test('throws on small number of points', (t) => {
-    t.throws(() => {
-        Delaunator.from(points.slice(0, 1));
-    });
-    t.throws(() => {
-        Delaunator.from(points.slice(0, 2));
-    });
+test('returns empty triangulation for small number of points', (t) => {
+    let d = Delaunator.from([]);
+    t.same(d.triangles, []);
+    t.same(d.hull, []);
+    d = Delaunator.from(points.slice(0, 1));
+    t.same(d.triangles, []);
+    t.same(d.hull, [0]);
+    d = Delaunator.from(points.slice(0, 2));
+    t.same(d.triangles, []);
+    t.same(d.hull, [0, 1]);
     t.end();
 });
 
-if (false) test('throws on all-collinear input', (t) => {
-    t.throws(() => {
-        console.warn(Delaunator.from([[0, 0], [1, 0], [3, 0], [2, 0]]));
-    });
-    t.throws(() => {
-        console.warn(Delaunator.from([[0, 0], [1, 0], [0, 0], [2, 0]]));
-    });
+test('returns empty triangulation for all-collinear input', (t) => {
+    const d = Delaunator.from([[0, 0], [1, 0], [3, 0], [2, 0]]);
+    t.same(d.triangles, []);
+    t.same(d.hull, [0, 1, 3, 2]);
     t.end();
 });
 
