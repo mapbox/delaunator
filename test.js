@@ -68,14 +68,14 @@ test('returns empty triangulation for small number of points', (t) => {
     t.same(d.hull, [0]);
     d = Delaunator.from(points.slice(0, 2));
     t.same(d.triangles, []);
-    t.same(d.hull, [0, 1]);
+    t.same(d.hull, [1, 0]); // [0, 1] is also correct
     t.end();
 });
 
 test('returns empty triangulation for all-collinear input', (t) => {
     const d = Delaunator.from([[0, 0], [1, 0], [3, 0], [2, 0]]);
     t.same(d.triangles, []);
-    t.same(d.hull, [0, 1, 3, 2]);
+    t.same(d.hull, [0, 1, 3, 2]); // [2, 3, 0, 1] is also correct
     t.end();
 });
 

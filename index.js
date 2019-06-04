@@ -97,29 +97,19 @@ export default class Delaunator {
         let i2y = coords[2 * i2 + 1];
 
         if (minRadius === Infinity) {
-            // order collinear points
+            // order collinear points by dx (or dy if all x are identical)
             // and return the list as a hull
-            let a = 0, b = 0;
-            for (let i = 1; i < n; i++) {
-                if ((a = coords[2 * i] - coords[0]) || (b = coords[2 * i + 1] - coords[1])) {
-                    const norm = Math.sqrt(a * a + b * b);
-                    a /= norm;
-                    b /= norm;
-                    continue;
-                }
-            }
-            const dists = new Float64Array(n);
+            const x0 = coords[0], y0 = coords[1], dx = new Float64Array(n);
             for (let i = 0; i < n; i++) {
-                dists[i] = a * (coords[2 * i] - coords[0]) + b * (coords[2 * i + 1] - coords[1]);
+                dx[i] = coords[2 * i] - x0 || coords[2 * i + 1] - y0;
             }
-            quicksort(ids, dists, 0, n - 1);
+            quicksort(ids, dx, 0, n - 1);
             const hull = new Uint32Array(n);
             let j = 0;
             for (let i = 0, d0 = -Infinity; i < n; i++) {
-                const d = dists[ids[i]];
-                if (d > d0) {
+                if (dx[ids[i]] > d0) {
                     hull[j++] = ids[i];
-                    d0 = d;
+                    d0 = dx[ids[i]];
                 }
             }
             this.hull = hull.subarray(0, j);
