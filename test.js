@@ -32,6 +32,24 @@ test('produces correct triangulation', (t) => {
     t.end();
 });
 
+test('produces correct triangulation after modifying coords in place', (t) => {
+    const d = Delaunator.from(points);
+
+    validate(t, points, d);
+    t.equal(d.trianglesLen, 5133);
+
+    const p = [80, 220];
+    d.coords[0] = p[0];
+    d.coords[1] = p[1];
+    const newPoints = [p].concat(points.slice(1));
+
+    d.update();
+    validate(t, newPoints, d);
+    t.equal(d.trianglesLen, 5139);
+
+    t.end();
+});
+
 test('issue #11', (t) => {
     validate(t, [[516, 661], [369, 793], [426, 539], [273, 525], [204, 694], [747, 750], [454, 390]]);
     t.end();
@@ -88,9 +106,7 @@ test('supports custom point format', (t) => {
     t.end();
 });
 
-function validate(t, points) {
-    const d = Delaunator.from(points);
-
+function validate(t, points, d = Delaunator.from(points)) {
     // validate halfedges
     for (let i = 0; i < d.halfedges.length; i++) {
         const i2 = d.halfedges[i];

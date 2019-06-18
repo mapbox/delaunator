@@ -97,6 +97,11 @@ A `Uint32Array` array of indices that reference points on the convex hull of the
 An array of input coordinates in the form `[x0, y0, x1, y1, ....]`,
 of the type provided in the constructor (or `Float64Array` if you used `Delaunator.from`).
 
+#### delaunay.update()
+
+Updates the triangulation if you modified `delaunay.coords` values in place, avoiding expensive memory allocations.
+Useful for iterative relaxation algorithms such as [Lloyd's](https://en.wikipedia.org/wiki/Lloyd%27s_algorithm).
+
 ## Performance
 
 Benchmark results against other Delaunay JS libraries

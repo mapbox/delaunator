@@ -25,18 +25,28 @@ export default class Delaunator {
 
         // arrays that will store the triangulation graph
         const maxTriangles = Math.max(2 * n - 5, 0);
-        const triangles = this.triangles = new Uint32Array(maxTriangles * 3);
-        const halfedges = this.halfedges = new Int32Array(maxTriangles * 3);
+        this._triangles = new Uint32Array(maxTriangles * 3);
+        this._halfedges = new Int32Array(maxTriangles * 3);
 
         // temporary arrays for tracking the edges of the advancing convex hull
         this._hashSize = Math.ceil(Math.sqrt(n));
-        const hullPrev = this.hullPrev = new Uint32Array(n); // edge to prev edge
-        const hullNext = this.hullNext = new Uint32Array(n); // edge to next edge
-        const hullTri = this.hullTri = new Uint32Array(n); // edge to adjacent triangle
-        const hullHash = new Int32Array(this._hashSize).fill(-1); // angular edge hash
+        this._hullPrev = new Uint32Array(n); // edge to prev edge
+        this._hullNext = new Uint32Array(n); // edge to next edge
+        this._hullTri = new Uint32Array(n); // edge to adjacent triangle
+        this._hullHash = new Int32Array(this._hashSize).fill(-1); // angular edge hash
+
+        // temporary arrays for sorting points
+        this._ids = new Uint32Array(n);
+        this._dists = new Float64Array(n);
+
+        this.update();
+    }
+
+    update() {
+        const {coords, _hullPrev: hullPrev, _hullNext: hullNext, _hullTri: hullTri, _hullHash: hullHash} =  this;
+        const n = coords.length >> 1;
 
         // populate an array of point indices; calculate input data bbox
-        const ids = new Uint32Array(n);
         let minX = Infinity;
         let minY = Infinity;
         let maxX = -Infinity;
@@ -49,7 +59,7 @@ export default class Delaunator {
             if (y < minY) minY = y;
             if (x > maxX) maxX = x;
             if (y > maxY) maxY = y;
-            ids[i] = i;
+            this._ids[i] = i;
         }
         const cx = (minX + maxX) / 2;
         const cy = (minY + maxY) / 2;
@@ -99,23 +109,22 @@ export default class Delaunator {
         if (minRadius === Infinity) {
             // order collinear points by dx (or dy if all x are identical)
             // and return the list as a hull
-            const x0 = coords[0], y0 = coords[1], dx = new Float64Array(n);
             for (let i = 0; i < n; i++) {
-                dx[i] = coords[2 * i] - x0 || coords[2 * i + 1] - y0;
+                this._dists[i] = (coords[2 * i] - coords[0]) || (coords[2 * i + 1] - coords[1]);
             }
-            quicksort(ids, dx, 0, n - 1);
+            quicksort(this._ids, this._dists, 0, n - 1);
             const hull = new Uint32Array(n);
             let j = 0;
             for (let i = 0, d0 = -Infinity; i < n; i++) {
-                if (dx[ids[i]] > d0) {
-                    hull[j++] = ids[i];
-                    d0 = dx[ids[i]];
+                const id = this._ids[i];
+                if (this._dists[id] > d0) {
+                    hull[j++] = id;
+                    d0 = this._dists[id];
                 }
             }
             this.hull = hull.subarray(0, j);
             this.triangles = new Uint32Array(0);
             this.halfedges = new Uint32Array(0);
-            this._hashSize = this.hullPrev = this.hullNext = this.hullTri = null;
             return;
         }
 
@@ -136,16 +145,15 @@ export default class Delaunator {
         this._cx = center.x;
         this._cy = center.y;
 
-        const dists = new Float64Array(n);
         for (let i = 0; i < n; i++) {
-            dists[i] = dist(coords[2 * i], coords[2 * i + 1], center.x, center.y);
+            this._dists[i] = dist(coords[2 * i], coords[2 * i + 1], center.x, center.y);
         }
 
         // sort the points by distance from the seed triangle circumcenter
-        quicksort(ids, dists, 0, n - 1);
+        quicksort(this._ids, this._dists, 0, n - 1);
 
         // set up the seed triangle as the starting hull
-        this.hullStart = i0;
+        this._hullStart = i0;
         let hullSize = 3;
 
         hullNext[i0] = hullPrev[i2] = i1;
@@ -156,6 +164,7 @@ export default class Delaunator {
         hullTri[i1] = 1;
         hullTri[i2] = 2;
 
+        hullHash.fill(-1);
         hullHash[this._hashKey(i0x, i0y)] = i0;
         hullHash[this._hashKey(i1x, i1y)] = i1;
         hullHash[this._hashKey(i2x, i2y)] = i2;
@@ -163,8 +172,8 @@ export default class Delaunator {
         this.trianglesLen = 0;
         this._addTriangle(i0, i1, i2, -1, -1, -1);
 
-        for (let k = 0, xp, yp; k < ids.length; k++) {
-            const i = ids[k];
+        for (let k = 0, xp, yp; k < this._ids.length; k++) {
+            const i = this._ids[k];
             const x = coords[2 * i];
             const y = coords[2 * i + 1];
 
@@ -225,7 +234,7 @@ export default class Delaunator {
             }
 
             // update the hull indices
-            this.hullStart = hullPrev[i] = e;
+            this._hullStart = hullPrev[i] = e;
             hullNext[e] = hullPrev[n] = i;
             hullNext[i] = n;
 
@@ -235,15 +244,14 @@ export default class Delaunator {
         }
 
         this.hull = new Uint32Array(hullSize);
-        for (let i = 0, e = this.hullStart; i < hullSize; i++) {
+        for (let i = 0, e = this._hullStart; i < hullSize; i++) {
             this.hull[i] = e;
             e = hullNext[e];
         }
-        this.hullPrev = this.hullNext = this.hullTri = null; // get rid of temporary arrays
 
         // trim typed triangle mesh arrays
-        this.triangles = triangles.subarray(0, this.trianglesLen);
-        this.halfedges = halfedges.subarray(0, this.trianglesLen);
+        this.triangles = this._triangles.subarray(0, this.trianglesLen);
+        this.halfedges = this._halfedges.subarray(0, this.trianglesLen);
     }
 
     _hashKey(x, y) {
@@ -251,7 +259,7 @@ export default class Delaunator {
     }
 
     _legalize(a) {
-        const {triangles, coords, halfedges} = this;
+        const {_triangles: triangles, _halfedges: halfedges, coords} = this;
 
         let i = 0;
         let ar = 0;
@@ -307,14 +315,14 @@ export default class Delaunator {
 
                 // edge swapped on the other side of the hull (rare); fix the halfedge reference
                 if (hbl === -1) {
-                    let e = this.hullStart;
+                    let e = this._hullStart;
                     do {
-                        if (this.hullTri[e] === bl) {
-                            this.hullTri[e] = a;
+                        if (this._hullTri[e] === bl) {
+                            this._hullTri[e] = a;
                             break;
                         }
-                        e = this.hullNext[e];
-                    } while (e !== this.hullStart);
+                        e = this._hullNext[e];
+                    } while (e !== this._hullStart);
                 }
                 this._link(a, hbl);
                 this._link(b, halfedges[ar]);
@@ -336,17 +344,17 @@ export default class Delaunator {
     }
 
     _link(a, b) {
-        this.halfedges[a] = b;
-        if (b !== -1) this.halfedges[b] = a;
+        this._halfedges[a] = b;
+        if (b !== -1) this._halfedges[b] = a;
     }
 
     // add a new triangle given vertex indices and adjacent half-edge ids
     _addTriangle(i0, i1, i2, a, b, c) {
         const t = this.trianglesLen;
 
-        this.triangles[t] = i0;
-        this.triangles[t + 1] = i1;
-        this.triangles[t + 2] = i2;
+        this._triangles[t] = i0;
+        this._triangles[t + 1] = i1;
+        this._triangles[t + 2] = i2;
 
         this._link(t, a);
         this._link(t + 1, b);
