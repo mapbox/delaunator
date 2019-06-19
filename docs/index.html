@@ -35,7 +35,7 @@
             max-width: 60rem;
         }
 
-        pre { 
+        pre {
             line-height: 1.5;
             display: block;
             white-space: pre;
@@ -73,9 +73,9 @@
   <body>
 
     <main>
-      
+
     <h1>Delaunator guide</h1>
-      
+
     <p>
       <a href="https://github.com/mapbox/delaunator">Delaunator</a> is a fast library for Delaunay triangulation. It takes as input a set of points:
     </p>
@@ -399,7 +399,7 @@ function forEachVoronoiCell(points, delaunay, callback) {
     </ul>
 
     </main>
-    
+
     <footer>
       <svg class="plain" width="1" height="1">
         <defs>
@@ -408,9 +408,9 @@ function forEachVoronoiCell(points, delaunay, callback) {
           </marker>
         </defs>
       </svg>
-      <script src="https://unpkg.com/delaunator@3.0.2/delaunator.min.js"></script>
+      <script src="https://unpkg.com/delaunator@4.0.0/delaunator.min.js"></script>
       <script src="diagrams.js"></script>
-      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.8/highlight.min.js"></script>
       <script>
         document.querySelectorAll('main script:not([src])').forEach(element => {
             let sibling = document.createElement('pre');
