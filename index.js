@@ -321,7 +321,7 @@ export default class Delaunator {
                             this._hullTri[e] = a;
                             break;
                         }
-                        e = this._hullNext[e];
+                        e = this._hullPrev[e];
                     } while (e !== this._hullStart);
                 }
                 this._link(a, hbl);

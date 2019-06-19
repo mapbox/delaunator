@@ -4,6 +4,7 @@ import Delaunator from '../index.js';
 
 import points from './fixtures/ukraine.json';
 import issue13 from './fixtures/issue13.json';
+import issue44 from './fixtures/issue44.json';
 import robustness1 from './fixtures/robustness1.json';
 import robustness2 from './fixtures/robustness2.json';
 
@@ -65,6 +66,11 @@ test('issue #24', (t) => {
 
 test('issue #13', (t) => {
     validate(t, issue13);
+    t.end();
+});
+
+test('issue #44', (t) => {
+    validate(t, issue44);
     t.end();
 });
 
