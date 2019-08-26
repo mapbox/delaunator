@@ -4,6 +4,7 @@ import Delaunator from '../index.js';
 
 import points from './fixtures/ukraine.json';
 import issue13 from './fixtures/issue13.json';
+import issue43 from './fixtures/issue43.json';
 import issue44 from './fixtures/issue44.json';
 import robustness1 from './fixtures/robustness1.json';
 import robustness2 from './fixtures/robustness2.json';
@@ -59,13 +60,18 @@ test('issue #11', (t) => {
     t.end();
 });
 
+test('issue #13', (t) => {
+    validate(t, issue13);
+    t.end();
+});
+
 test('issue #24', (t) => {
     validate(t, [[382, 302], [382, 328], [382, 205], [623, 175], [382, 188], [382, 284], [623, 87], [623, 341], [141, 227]]);
     t.end();
 });
 
-test('issue #13', (t) => {
-    validate(t, issue13);
+test('issue #43', (t) => {
+    validate(t, issue43);
     t.end();
 });
 
@@ -114,6 +120,12 @@ test('supports custom point format', (t) => {
     t.end();
 });
 
+function convex(a, b, c) {
+    const dx = a[0] - b[0], dy = a[1] - b[1],
+        ex = a[0] - c[0], ey = a[1] - c[1];
+    return dx * ey - ex * dy <= 0;
+}
+
 function validate(t, points, d = Delaunator.from(points)) {
     // validate halfedges
     for (let i = 0; i < d.halfedges.length; i++) {
@@ -130,6 +142,8 @@ function validate(t, points, d = Delaunator.from(points)) {
         const [x0, y0] = points[d.hull[j]];
         const [x, y] = points[d.hull[i]];
         hullAreas.push((x - x0) * (y + y0));
+        const c = convex(points[d.hull[j]], points[d.hull[(j + 1) % d.hull.length]],  points[d.hull[(j + 3) % d.hull.length]]);
+        if (!c) t.fail(`hull is not convex at ${j}`);
     }
     const hullArea = sum(hullAreas);
 
