@@ -379,7 +379,14 @@ function dist(ax, ay, bx, by) {
 }
 
 function orient(px, py, qx, qy, rx, ry) {
-    return (qy - py) * (rx - qx) - (qx - px) * (ry - qy) < 0;
+    const d = cross(px, py, qx, qy, rx, ry);
+    if (Math.abs(d) > 1e-6) return d < 0;
+    // in doubt, use a majority vote
+    return (d < 0) + (cross(qx, qy, rx, ry, px, py) < 0) + (cross(rx, ry, px, py, qx, qy) < 0) > 1;
+}
+
+function cross(px, py, qx, qy, rx, ry) {
+    return (qy - py) * (rx - qx) - (qx - px) * (ry - qy);
 }
 
 function inCircle(ax, ay, bx, by, cx, cy, px, py) {
