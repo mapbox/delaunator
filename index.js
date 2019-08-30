@@ -387,10 +387,9 @@ function orientIfSure(px, py, rx, ry, qx, qy) {
 
 // a more robust orientation test that's stable in a given triangle (to fix robustness issues)
 function orient(rx, ry, qx, qy, px, py) {
-    const sign = orientIfSure(px, py, rx, ry, qx, qy) ||
-    orientIfSure(rx, ry, qx, qy, px, py) ||
-    orientIfSure(qx, qy, px, py, rx, ry);
-    return sign < 0;
+    return (orientIfSure(px, py, rx, ry, qx, qy) ||
+        orientIfSure(rx, ry, qx, qy, px, py) ||
+        orientIfSure(qx, qy, px, py, rx, ry)) < 0;
 }
 
 function inCircle(ax, ay, bx, by, cx, cy, px, py) {
