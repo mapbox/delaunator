@@ -378,15 +378,19 @@ function dist(ax, ay, bx, by) {
     return dx * dx + dy * dy;
 }
 
-function orient(px, py, qx, qy, rx, ry) {
-    const d = cross(px, py, qx, qy, rx, ry);
-    if (Math.abs(d) > 1e-6) return d < 0;
-    // in doubt, use a majority vote
-    return (d < 0) + (cross(qx, qy, rx, ry, px, py) < 0) + (cross(rx, ry, px, py, qx, qy) < 0) > 1;
+// return 2d orientation sign if we're confident in it through J. Shewchuk's error bound check
+function orientIfSure(px, py, rx, ry, qx, qy) {
+    const l = (ry - py) * (qx - px);
+    const r = (rx - px) * (qy - py);
+    return Math.abs(l - r) >= 3.3306690738754716e-16 * Math.abs(l + r) ? l - r : 0;
 }
 
-function cross(px, py, qx, qy, rx, ry) {
-    return (qy - py) * (rx - qx) - (qx - px) * (ry - qy);
+// a more robust orientation test that's stable in a given triangle (to fix robustness issues)
+function orient(rx, ry, qx, qy, px, py) {
+    const sign = orientIfSure(px, py, rx, ry, qx, qy) ||
+    orientIfSure(rx, ry, qx, qy, px, py) ||
+    orientIfSure(qx, qy, px, py, rx, ry);
+    return sign < 0;
 }
 
 function inCircle(ax, ay, bx, by, cx, cy, px, py) {

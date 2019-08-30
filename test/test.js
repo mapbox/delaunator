@@ -120,10 +120,13 @@ test('supports custom point format', (t) => {
     t.end();
 });
 
-function convex(a, b, c) {
-    const dx = a[0] - b[0], dy = a[1] - b[1],
-        ex = a[0] - c[0], ey = a[1] - c[1];
-    return dx * ey - ex * dy <= 0;
+function orient([px, py], [rx, ry], [qx, qy]) {
+    const l = (ry - py) * (qx - px);
+    const r = (rx - px) * (qy - py);
+    return Math.abs(l - r) >= 3.3306690738754716e-16 * Math.abs(l + r) ? l - r : 0;
+}
+function convex(r, q, p) {
+    return (orient(p, r, q) || orient(r, q, p) || orient(q, p, r)) >= 0;
 }
 
 function validate(t, points, d = Delaunator.from(points)) {
