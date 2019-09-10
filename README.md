@@ -6,9 +6,11 @@ An incredibly fast JavaScript library for
 - [Interactive Demo](https://mapbox.github.io/delaunator/demo.html)
 - [Guide to data structures](https://mapbox.github.io/delaunator/)
 
+<img src="delaunator.png" alt="Delaunay triangulation example" width="600" />
+
 ### Projects based on Delaunator
 
-- [d3-delaunay](https://github.com/d3/d3-delaunay) for Voronoi diagrams, search, traversal and rendering.
+- [d3-delaunay](https://github.com/d3/d3-delaunay) for Voronoi diagrams, search, traversal and rendering (a part of [D3](https://d3js.org)).
 - [d3-geo-voronoi](https://github.com/Fil/d3-geo-voronoi) for Delaunay triangulations and Voronoi diagrams on a sphere (e.g. for geographic locations).
 
 ### Ports to other languages
@@ -16,8 +18,7 @@ An incredibly fast JavaScript library for
 - [delaunator-rs](https://github.com/mourner/delaunator-rs) (Rust)
 - [fogleman/delaunay](https://github.com/fogleman/delaunay) (Go)
 - [delaunator-cpp](https://github.com/delfrrr/delaunator-cpp) (C++)
-
-<img src="delaunator.png" alt="Delaunay triangulation example" width="600" />
+- [delaunator-sharp](https://github.com/nol1fe/delaunator-sharp) (C#)
 
 ## Example
 
