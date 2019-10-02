@@ -6,6 +6,7 @@
   "module": "index.js",
   "jsdelivr": "delaunator.min.js",
   "unpkg": "delaunator.min.js",
+  "sideEffects": false,
   "dependencies": {},
   "devDependencies": {
     "c8": "^5.0.1",
