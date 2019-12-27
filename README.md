@@ -19,6 +19,7 @@ An incredibly fast JavaScript library for
 - [fogleman/delaunay](https://github.com/fogleman/delaunay) (Go)
 - [delaunator-cpp](https://github.com/delfrrr/delaunator-cpp) (C++)
 - [delaunator-sharp](https://github.com/nol1fe/delaunator-sharp) (C#)
+- [delaunator-ruby](https://github.com/hendrixfan/delaunator-ruby) (Ruby)
 
 ## Example
 
