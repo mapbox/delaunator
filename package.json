@@ -9,14 +9,14 @@
   "sideEffects": false,
   "dependencies": {},
   "devDependencies": {
-    "c8": "^5.0.1",
-    "eslint": "^6.2.2",
+    "c8": "^7.1.0",
+    "eslint": "^6.8.0",
     "eslint-config-mourner": "^3.0.0",
     "esm": "^3.2.25",
-    "rollup": "^1.20.3",
+    "rollup": "^1.31.1",
     "rollup-plugin-buble": "^0.19.8",
-    "rollup-plugin-terser": "^5.1.1",
-    "tape": "^4.11.0"
+    "rollup-plugin-terser": "^5.2.0",
+    "tape": "^4.13.0"
   },
   "repository": {
     "type": "git",
