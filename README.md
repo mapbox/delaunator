@@ -20,6 +20,7 @@ An incredibly fast JavaScript library for
 - [delaunator-cpp](https://github.com/delfrrr/delaunator-cpp) (C++)
 - [delaunator-sharp](https://github.com/nol1fe/delaunator-sharp) (C#)
 - [delaunator-ruby](https://github.com/hendrixfan/delaunator-ruby) (Ruby)
+- [Delaunator-Python](https://github.com/HakanSeven12/Delaunator-Python) (Python)
 
 ## Example
 
