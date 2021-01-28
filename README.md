@@ -22,6 +22,7 @@ An incredibly fast JavaScript library for
 - [delaunator-ruby](https://github.com/hendrixfan/delaunator-ruby) (Ruby)
 - [Delaunator-Python](https://github.com/HakanSeven12/Delaunator-Python) (Python)
 - [hx-delaunator](https://github.com/dmitryhryppa/hx-delaunator) (Haxe)
+- [ricardomatias/delaunator](https://github.com/ricardomatias/delaunator) (Kotlin)
 
 ## Example
 
