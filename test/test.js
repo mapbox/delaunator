@@ -13,6 +13,8 @@ const issue43 = loadJSON('./fixtures/issue43.json');
 const issue44 = loadJSON('./fixtures/issue44.json');
 const robustness1 = loadJSON('./fixtures/robustness1.json');
 const robustness2 = loadJSON('./fixtures/robustness2.json');
+const robustness3 = loadJSON('./fixtures/robustness3.json');
+const robustness4 = loadJSON('./fixtures/robustness4.json');
 
 test('triangulates plain array', (t) => {
     const d = new Delaunator([].concat(...points));
@@ -93,6 +95,8 @@ test('robustness', (t) => {
     validate(t, robustness1.map(p => [p[0] * 1e9, p[1] * 1e9]));
     validate(t, robustness2.slice(0, 100));
     validate(t, robustness2);
+    validate(t, robustness3);
+    validate(t, robustness4);
     t.end();
 });
 
