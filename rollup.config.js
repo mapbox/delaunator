@@ -1,19 +1,18 @@
 import {terser} from 'rollup-plugin-terser';
-import buble from 'rollup-plugin-buble';
+import resolve from '@rollup/plugin-node-resolve';
 
 const config = (file, plugins) => ({
     input: 'index.js',
     output: {
         name: 'Delaunator',
         format: 'umd',
+        indent: false,
         file
     },
     plugins
 });
 
-const bubleConfig = {transforms: {dangerousForOf: true}};
-
 export default [
-    config('delaunator.js', [buble(bubleConfig)]),
-    config('delaunator.min.js', [terser(), buble(bubleConfig)])
+    config('delaunator.js', [resolve()]),
+    config('delaunator.min.js', [resolve(), terser()])
 ];

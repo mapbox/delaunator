@@ -4,19 +4,19 @@
   "description": "An incredibly fast JavaScript library for Delaunay triangulation of 2D points",
   "main": "delaunator.js",
   "module": "index.js",
+  "type": "module",
   "jsdelivr": "delaunator.min.js",
   "unpkg": "delaunator.min.js",
   "sideEffects": false,
   "dependencies": {},
   "devDependencies": {
-    "c8": "^7.1.0",
-    "eslint": "^6.8.0",
+    "@rollup/plugin-node-resolve": "^11.2.0",
+    "c8": "^7.6.0",
+    "eslint": "^7.20.0",
     "eslint-config-mourner": "^3.0.0",
-    "esm": "^3.2.25",
-    "rollup": "^1.31.1",
-    "rollup-plugin-buble": "^0.19.8",
-    "rollup-plugin-terser": "^5.2.0",
-    "tape": "^4.13.0"
+    "rollup": "^2.39.0",
+    "rollup-plugin-terser": "^7.0.2",
+    "tape": "^5.1.1"
   },
   "repository": {
     "type": "git",
@@ -25,9 +25,9 @@
   "scripts": {
     "lint": "eslint index.js test/test.js bench.js rollup.config.js docs/diagrams.js",
     "pretest": "npm run lint",
-    "test": "node -r esm test/test.js",
-    "cov": "c8 node -r esm test/test.js && c8 report -r html",
-    "bench": "node -r esm bench.js",
+    "test": "node test/test.js",
+    "cov": "c8 node test/test.js && c8 report -r html",
+    "bench": "node bench.js",
     "build": "rollup -c",
     "start": "rollup -cw",
     "prepublishOnly": "npm test && npm run build"
@@ -41,6 +41,9 @@
     "extends": "mourner",
     "rules": {
       "no-sequences": 0
+    },
+    "parserOptions": {
+      "ecmaVersion": 2020
     }
   },
   "keywords": [
