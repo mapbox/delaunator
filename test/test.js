@@ -11,6 +11,7 @@ const points = loadJSON('./fixtures/ukraine.json');
 const issue13 = loadJSON('./fixtures/issue13.json');
 const issue43 = loadJSON('./fixtures/issue43.json');
 const issue44 = loadJSON('./fixtures/issue44.json');
+const issue61 = loadJSON('./fixtures/issue61.json');
 const robustness1 = loadJSON('./fixtures/robustness1.json');
 const robustness2 = loadJSON('./fixtures/robustness2.json');
 const robustness3 = loadJSON('./fixtures/robustness3.json');
@@ -84,6 +85,51 @@ test('issue #43', (t) => {
 
 test('issue #44', (t) => {
     validate(t, issue44);
+    t.end();
+});
+
+test('issue #61', (t) => {
+    /* This test asserts that a triangle with
+     * floating point midpoints
+     * will return the four internal triangles
+     *        c
+     *       / \
+     *      /   \
+     *     /     \
+     *    a-------e
+     *
+     *        c
+     *       / \
+     *      b   d
+     *     /     \
+     *    a---f---e
+     *
+     *        c
+     *       / \
+     *      b---d
+     *     / \ / \
+     *    a---f---e
+     */
+
+    const mid = (a, b) => {
+        const dx = a[0] - b[0];
+        const dy = a[1] - b[1];
+        return [a[0] + dx / 2, a[1] + dy / 2];
+    };
+
+    const points = [
+        issue61[0],
+        mid(issue61[0], issue61[1]),
+        issue61[1],
+        mid(issue61[1], issue61[2]),
+        issue61[2],
+        mid(issue61[2], issue61[0]),
+    ];
+
+    const d = Delaunator.from(points);
+
+    t.equal(d.triangles.length, 12, 'triangles has the number of vertices equal to 4 triangles');
+    validate(t, points, d);
     t.end();
 });
 
