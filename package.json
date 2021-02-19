@@ -8,7 +8,9 @@
   "jsdelivr": "delaunator.min.js",
   "unpkg": "delaunator.min.js",
   "sideEffects": false,
-  "dependencies": {},
+  "dependencies": {
+    "robust-predicates": "^3.0.0"
+  },
   "devDependencies": {
     "@rollup/plugin-node-resolve": "^11.2.0",
     "c8": "^7.6.0",
