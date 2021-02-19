@@ -1,13 +1,18 @@
 
 import {test} from 'tape';
 import Delaunator from '../index.js';
+import {readFileSync} from 'fs';
 
-import points from './fixtures/ukraine.json';
-import issue13 from './fixtures/issue13.json';
-import issue43 from './fixtures/issue43.json';
-import issue44 from './fixtures/issue44.json';
-import robustness1 from './fixtures/robustness1.json';
-import robustness2 from './fixtures/robustness2.json';
+function loadJSON(path) {
+    return JSON.parse(readFileSync(new URL(path, import.meta.url), 'utf8'));
+}
+
+const points = loadJSON('./fixtures/ukraine.json');
+const issue13 = loadJSON('./fixtures/issue13.json');
+const issue43 = loadJSON('./fixtures/issue43.json');
+const issue44 = loadJSON('./fixtures/issue44.json');
+const robustness1 = loadJSON('./fixtures/robustness1.json');
+const robustness2 = loadJSON('./fixtures/robustness2.json');
 
 test('triangulates plain array', (t) => {
     const d = new Delaunator([].concat(...points));
