@@ -25,21 +25,16 @@ console.log(delaunay.triangles);
 
 ## Install
 
-Install with NPM (`npm install delaunator`) or Yarn (`yarn add delaunator`), then:
+Install with NPM (`npm install delaunator`) or Yarn (`yarn add delaunator`), then import as an ES module:
 
 ```js
-// import as an ES module
 import Delaunator from 'delaunator';
-
-// or require in Node / Browserify
-const Delaunator = require('delaunator');
 ```
 
-Or use a browser build directly:
+Or use a browser UMD build directly:
 
 ```html
-<script src="https://unpkg.com/delaunator@4.0.1/delaunator.min.js"></script> <!-- minified build -->
-<script src="https://unpkg.com/delaunator@4.0.1/delaunator.js"></script> <!-- dev build -->
+<script src="https://unpkg.com/delaunator@5.0.0/delaunator.min.js"></script> <!-- minified build -->
 ```
 
 ## API Reference
