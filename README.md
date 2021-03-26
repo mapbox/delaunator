@@ -1,6 +1,6 @@
 # Delaunator [![Build Status](https://travis-ci.org/mapbox/delaunator.svg?branch=master)](https://travis-ci.org/mapbox/delaunator) [![](https://img.shields.io/badge/simply-awesome-brightgreen.svg)](https://github.com/mourner/projects) [![](https://badgen.net/bundlephobia/minzip/delaunator)](https://unpkg.com/delaunator)
 
-An incredibly fast JavaScript library for
+An incredibly fast and robust JavaScript library for
 [Delaunay triangulation](https://en.wikipedia.org/wiki/Delaunay_triangulation) of 2D points.
 
 - [Interactive Demo](https://mapbox.github.io/delaunator/demo.html)
@@ -13,23 +13,12 @@ An incredibly fast JavaScript library for
 - [d3-delaunay](https://github.com/d3/d3-delaunay) for Voronoi diagrams, search, traversal and rendering (a part of [D3](https://d3js.org)).
 - [d3-geo-voronoi](https://github.com/Fil/d3-geo-voronoi) for Delaunay triangulations and Voronoi diagrams on a sphere (e.g. for geographic locations).
 
-### Ports to other languages
-
-- [delaunator-rs](https://github.com/mourner/delaunator-rs) (Rust)
-- [fogleman/delaunay](https://github.com/fogleman/delaunay) (Go)
-- [delaunator-cpp](https://github.com/abellgithub/delaunator-cpp) (C++)
-- [delaunator-sharp](https://github.com/nol1fe/delaunator-sharp) (C#)
-- [delaunator-ruby](https://github.com/hendrixfan/delaunator-ruby) (Ruby)
-- [Delaunator-Python](https://github.com/HakanSeven12/Delaunator-Python) (Python)
-- [hx-delaunator](https://github.com/dmitryhryppa/hx-delaunator) (Haxe)
-- [ricardomatias/delaunator](https://github.com/ricardomatias/delaunator) (Kotlin)
-
 ## Example
 
 ```js
-const points = [[168, 180], [168, 178], [168, 179], [168, 181], [168, 183], ...];
+const coords = [168,180, 168,178, 168,179, 168,181, 168,183, ...];
 
-const delaunay = Delaunator.from(points);
+const delaunay = new Delaunator(coords);
 console.log(delaunay.triangles);
 // [623, 636, 619,  636, 444, 619, ...]
 ```
@@ -55,16 +44,16 @@ Or use a browser build directly:
 
 ## API Reference
 
+#### new Delaunator(coords)
+
+Constructs a delaunay triangulation object given an array of point coordinates of the form:
+`[x0, y0, x1, y1, ...]` (use a typed array for best performance).
+
 #### Delaunator.from(points[, getX, getY])
 
 Constructs a delaunay triangulation object given an array of points (`[x, y]` by default).
 `getX` and `getY` are optional functions of the form `(point) => value` for custom point formats.
 Duplicate points are skipped.
-
-#### new Delaunator(coords)
-
-Constructs a delaunay triangulation object given an array of point coordinates of the form:
-`[x0, y0, x1, y1, ...]` (use a typed array for best performance).
 
 #### delaunay.triangles
 
@@ -130,3 +119,18 @@ The algorithm is based on ideas from the following papers:
 - [A simple sweep-line Delaunay triangulation algorithm](http://www.academicpub.org/jao/paperInfo.aspx?paperid=15630), 2013, Liu Yonghe, Feng Jinming and Shao Yuehong
 - [S-hull: a fast radial sweep-hull routine for Delaunay triangulation](http://www.s-hull.org/paper/s_hull.pdf), 2010, David Sinclair
 - [A faster circle-sweep Delaunay triangulation algorithm](http://cglab.ca/~biniaz/papers/Sweep%20Circle.pdf), 2011, Ahmad Biniaz and Gholamhossein Dastghaibyfard
+
+## Robustness
+
+Delaunator should produce valid output even on highly degenerate input. It does so by depending on [robust-predicates](https://github.com/mourner/robust-predicates), a modern port of Jonathan Shewchuk's robust geometric predicates, an industry standard in computational geometry.
+
+## Ports to other languages
+
+- [delaunator-rs](https://github.com/mourner/delaunator-rs) (Rust)
+- [fogleman/delaunay](https://github.com/fogleman/delaunay) (Go)
+- [delaunator-cpp](https://github.com/abellgithub/delaunator-cpp) (C++)
+- [delaunator-sharp](https://github.com/nol1fe/delaunator-sharp) (C#)
+- [delaunator-ruby](https://github.com/hendrixfan/delaunator-ruby) (Ruby)
+- [Delaunator-Python](https://github.com/HakanSeven12/Delaunator-Python) (Python)
+- [hx-delaunator](https://github.com/dmitryhryppa/hx-delaunator) (Haxe)
+- [ricardomatias/delaunator](https://github.com/ricardomatias/delaunator) (Kotlin)
