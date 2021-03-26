@@ -31,10 +31,18 @@ Install with NPM (`npm install delaunator`) or Yarn (`yarn add delaunator`), the
 import Delaunator from 'delaunator';
 ```
 
-Or use a browser UMD build directly:
+To use as a module in a browser:
 
 ```html
-<script src="https://unpkg.com/delaunator@5.0.0/delaunator.min.js"></script> <!-- minified build -->
+<script type="module">
+    import Delaunator from 'https://cdn.skypack.dev/delaunator@5.0.0';
+</script>
+```
+
+Or use a browser UMD build that exposes a `Delaunator` global variable:
+
+```html
+<script src="https://unpkg.com/delaunator@5.0.0/delaunator.min.js"></script>
 ```
 
 ## API Reference
