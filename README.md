@@ -137,3 +137,4 @@ Delaunator should produce valid output even on highly degenerate input. It does 
 - [Delaunator-Python](https://github.com/HakanSeven12/Delaunator-Python) (Python)
 - [hx-delaunator](https://github.com/dmitryhryppa/hx-delaunator) (Haxe)
 - [ricardomatias/delaunator](https://github.com/ricardomatias/delaunator) (Kotlin)
+- [delaunator-java](https://github.com/waveware4ai/delaunator-java) (Java)
