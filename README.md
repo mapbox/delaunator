@@ -66,13 +66,17 @@ All triangles are directed counterclockwise.
 To get the coordinates of all triangles, use:
 
 ```js
-for (let i = 0; i < triangles.length; i += 3) {
+let coordinates = []
+
+for (let i = 0; i < delaunay.triangles.length; i += 3) {
     coordinates.push([
-        points[triangles[i]],
-        points[triangles[i + 1]],
-        points[triangles[i + 2]]
+        points[delaunay.triangles[i]],
+        points[delaunay.triangles[i + 1]],
+        points[delaunay.triangles[i + 2]]
     ]);
 }
+
+console.log(coordinates)
 ```
 
 #### delaunay.halfedges
