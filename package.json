@@ -13,12 +13,10 @@
   },
   "devDependencies": {
     "@rollup/plugin-node-resolve": "^15.0.1",
-    "@rollup/plugin-terser": "^0.2.1",
-    "c8": "^7.12.0",
-    "eslint": "^8.31.0",
+    "@rollup/plugin-terser": "^0.4.0",
+    "eslint": "^8.36.0",
     "eslint-config-mourner": "^3.0.0",
-    "rollup": "^3.9.1",
-    "tape": "^5.6.1"
+    "rollup": "^3.20.0"
   },
   "repository": {
     "type": "git",
@@ -27,8 +25,8 @@
   "scripts": {
     "lint": "eslint index.js test/test.js bench.js rollup.config.js docs/diagrams.js",
     "pretest": "npm run lint",
-    "test": "node test/test.js",
-    "cov": "c8 node test/test.js && c8 report -r html",
+    "test": "node --test-reporter spec test/test.js",
+    "cov": "node --experimental-test-coverage test/test.js",
     "bench": "node bench.js",
     "build": "rollup -c",
     "start": "rollup -cw",
