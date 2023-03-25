@@ -35,7 +35,7 @@ export default class Delaunator {
         this._hullPrev = new Uint32Array(n); // edge to prev edge
         this._hullNext = new Uint32Array(n); // edge to next edge
         this._hullTri = new Uint32Array(n); // edge to adjacent triangle
-        this._hullHash = new Int32Array(this._hashSize).fill(-1); // angular edge hash
+        this._hullHash = new Int32Array(this._hashSize); // angular edge hash
 
         // temporary arrays for sorting points
         this._ids = new Uint32Array(n);
@@ -66,11 +66,10 @@ export default class Delaunator {
         const cx = (minX + maxX) / 2;
         const cy = (minY + maxY) / 2;
 
-        let minDist = Infinity;
         let i0, i1, i2;
 
         // pick a seed point close to the center
-        for (let i = 0; i < n; i++) {
+        for (let i = 0, minDist = Infinity; i < n; i++) {
             const d = dist(cx, cy, coords[2 * i], coords[2 * i + 1]);
             if (d < minDist) {
                 i0 = i;
@@ -80,10 +79,8 @@ export default class Delaunator {
         const i0x = coords[2 * i0];
         const i0y = coords[2 * i0 + 1];
 
-        minDist = Infinity;
-
         // find the point closest to the seed
-        for (let i = 0; i < n; i++) {
+        for (let i = 0, minDist = Infinity; i < n; i++) {
             if (i === i0) continue;
             const d = dist(i0x, i0y, coords[2 * i], coords[2 * i + 1]);
             if (d < minDist && d > 0) {
@@ -119,9 +116,10 @@ export default class Delaunator {
             let j = 0;
             for (let i = 0, d0 = -Infinity; i < n; i++) {
                 const id = this._ids[i];
-                if (this._dists[id] > d0) {
+                const d = this._dists[id];
+                if (d > d0) {
                     hull[j++] = id;
-                    d0 = this._dists[id];
+                    d0 = d;
                 }
             }
             this.hull = hull.subarray(0, j);

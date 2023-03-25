@@ -16,7 +16,7 @@
     "@rollup/plugin-terser": "^0.4.0",
     "eslint": "^8.36.0",
     "eslint-config-mourner": "^3.0.0",
-    "rollup": "^3.20.0"
+    "rollup": "^3.20.2"
   },
   "repository": {
     "type": "git",
