@@ -138,3 +138,4 @@ Delaunator should produce valid output even on highly degenerate input. It does 
 - [ricardomatias/delaunator](https://github.com/ricardomatias/delaunator) (Kotlin)
 - [delaunator-java](https://github.com/waveware4ai/delaunator-java) (Java)
 - [delaunay-Stata](https://github.com/asjadnaqvi/stata-delaunay-voronoi) (Stata/Mata)
+- [Delaunator.jl](https://github.com/JuliaGeometry/Delaunator.jl) (Julia)
