@@ -14,9 +14,9 @@
   "devDependencies": {
     "@rollup/plugin-node-resolve": "^15.1.0",
     "@rollup/plugin-terser": "^0.4.3",
-    "eslint": "^8.42.0",
+    "eslint": "^8.43.0",
     "eslint-config-mourner": "^3.0.0",
-    "rollup": "^3.23.0"
+    "rollup": "^3.26.0"
   },
   "repository": {
     "type": "git",
