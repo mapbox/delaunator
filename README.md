@@ -1,4 +1,4 @@
-# Delaunator [![Build Status](https://app.travis-ci.com/mapbox/delaunator.svg?branch=main)](https://app.travis-ci.com/mapbox/delaunator) [![](https://img.shields.io/badge/simply-awesome-brightgreen.svg)](https://github.com/mourner/projects) [![](https://badgen.net/bundlephobia/minzip/delaunator)](https://unpkg.com/delaunator)
+# Delaunator [![](https://img.shields.io/badge/simply-awesome-brightgreen.svg)](https://github.com/mourner/projects) [![](https://badgen.net/bundlephobia/minzip/delaunator)](https://unpkg.com/delaunator)
 
 An incredibly fast and robust JavaScript library for
 [Delaunay triangulation](https://en.wikipedia.org/wiki/Delaunay_triangulation) of 2D points.
