@@ -14,9 +14,9 @@
   "devDependencies": {
     "@rollup/plugin-node-resolve": "^15.2.3",
     "@rollup/plugin-terser": "^0.4.4",
-    "eslint": "^8.56.0",
-    "eslint-config-mourner": "^3.0.0",
-    "rollup": "^4.9.6"
+    "eslint": "^9.5.0",
+    "eslint-config-mourner": "^4.0.0",
+    "rollup": "^4.18.0"
   },
   "repository": {
     "type": "git",
@@ -37,15 +37,6 @@
     "delaunator.js",
     "delaunator.min.js"
   ],
-  "eslintConfig": {
-    "extends": "mourner",
-    "rules": {
-      "no-sequences": 0
-    },
-    "parserOptions": {
-      "ecmaVersion": 2020
-    }
-  },
   "keywords": [
     "delaunay triangulation",
     "computational geometry",
