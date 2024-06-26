@@ -25,7 +25,7 @@
   "scripts": {
     "lint": "eslint index.js test/test.js bench.js rollup.config.js docs/diagrams.js",
     "pretest": "npm run lint",
-    "test": "node --test-reporter spec test/test.js",
+    "test": "node test/test.js",
     "cov": "node --experimental-test-coverage test/test.js",
     "bench": "node bench.js",
     "build": "rollup -c",
