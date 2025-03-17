@@ -135,6 +135,7 @@ Delaunator should produce valid output even on highly degenerate input. It does 
 - [delaunator-sharp](https://github.com/nol1fe/delaunator-sharp) (C#)
 - [delaunator-ruby](https://github.com/hendrixfan/delaunator-ruby) (Ruby)
 - [Delaunator-Python](https://github.com/HakanSeven12/Delaunator-Python) (Python)
+- [torch-delaunay](https://github.com/ybubnov/torch_delaunay) (Python/Torch)
 - [ricardomatias/delaunator](https://github.com/ricardomatias/delaunator) (Kotlin)
 - [delaunator-java](https://github.com/waveware4ai/delaunator-java) (Java)
 - [delaunay-Stata](https://github.com/asjadnaqvi/stata-delaunay-voronoi) (Stata/Mata)
