@@ -363,6 +363,7 @@ function forEachVoronoiCell(points, delaunay, callback) {
         }
     }
     for (let p = 0; p < points.length; p++) {
+        if (!index.has(p)) { continue; } // no cell was made for this point
         const incoming = index.get(p);
         const edges = edgesAroundPoint(delaunay, incoming);
         const triangles = edges.map(triangleOfEdge);
