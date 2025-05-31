@@ -12,6 +12,8 @@
 
 */
 
+/* global Delaunator, triangleCenter, forEachTriangle, forEachTriangleEdge, forEachVoronoiCell, edgesAroundPoint, nextHalfedge */
+
 /** Helper function to construct a subset of points for some of the diagrams */
 function filterToSvgRect(points, left, top, width, height) {
     return points.filter(([x, y]) => left <= x && x <= left + width && top <= y && y <= top + height);
@@ -137,7 +139,7 @@ function halfedgeSvg(points, delaunay, options) {
         results.push(`<line class="edge-${e1}" x1="${a[0] + dn * n[0] + dt * t[0]}" y1="${a[1] + dn * n[1] + dt * t[1]}"
                                                      x2="${b[0] + dn * n[0] - dt * t[0]}" y2="${b[1] + dn * n[1] - dt * t[1]}" />`);
         if (options.labels) {
-            results.push(`<text x="${(a[0] + b[0])/2 + labelSpacing * n[0]}" y="${(a[1] + b[1])/2 + labelSpacing * n[1]}" dy="2.5">${e1}</text>`);
+            results.push(`<text x="${(a[0] + b[0]) / 2 + labelSpacing * n[0]}" y="${(a[1] + b[1]) / 2 + labelSpacing * n[1]}" dy="2.5">${e1}</text>`);
         }
     }
     results.push('</g>');
@@ -164,26 +166,26 @@ $('#diagram-delaunay').innerHTML = `
 
 /** format points */
 function formatPointArray(points, {prefix, suffix, pointsPerLine}) {
-    let output = prefix + "[";
+    let output = '';
     for (let row = 0; row * pointsPerLine < points.length; row++) {
         for (let col = 0; col < pointsPerLine; col++) {
-            let i = row * pointsPerLine + col;
+            const i = row * pointsPerLine + col;
             output += `[${points[i][0]},${points[i][1]}]`;
             if (i + 1 === points.length) {
-                return output + "]" + suffix;
+                return `${prefix}[${output}]${suffix}`;
             }
-            output += ", ";
+            output += ', ';
         }
-        output += "\n".padEnd(prefix.length + 2);
+        output += '\n'.padEnd(prefix.length + 2);
     }
-    throw "logic error";
+    throw new Error('logic error - loop should early exit');
 }
 
 $('#diagram-point-labels').innerHTML = `
 <svg viewBox="300 300 400 200">
   ${redPointsNumericSvg(points3)}
 </svg>
-<pre>${formatPointArray(points3, {prefix: "const points = ", suffix: ";", pointsPerLine: 5})}
+<pre>${formatPointArray(points3, {prefix: 'const points = ', suffix: ';', pointsPerLine: 5})}
 const delaunay = Delaunator.from(points);</pre>
 </pre>
 <figcaption>Delaunator input is an array of points</figcaption>`;
@@ -191,23 +193,23 @@ const delaunay = Delaunator.from(points);</pre>
 /** format delaunay.triangles in groups of 3 indices - works for our needs but not in general */
 function formatTriangleArray(triangles, {prefix, trianglesPerLine}) {
     const numTriangles = triangles.length / 3;
-    let output = prefix + "[";
+    let output = '';
     for (let row = 0; row < trianglesPerLine < numTriangles; row++) {
         for (let col = 0; col < trianglesPerLine; col++) {
             for (let vertex = 0; vertex < 3; vertex++) {
-                let t = row * trianglesPerLine + col;
-                let i = 3 * t + vertex;
+                const t = row * trianglesPerLine + col;
+                const i = 3 * t + vertex;
                 output += triangles[i].toString(); // assume 1 digit
-                if (i + 1 == triangles.length) {
-                    return output + "]";
+                if (i + 1 === triangles.length) {
+                    return `${prefix}[${output}]`;
                 }
-                output += ",";
+                output += ',';
             }
-            output += "  ";
+            output += '  ';
         }
-        output += "\n".padEnd(prefix.length + 2);
+        output += '\n'.padEnd(prefix.length + 2);
     }
-    throw "logic error";
+    throw new Error('logic error - loop should early exit');
 }
 
 $('#diagram-delaunay-labels').innerHTML = `
@@ -215,7 +217,7 @@ $('#diagram-delaunay-labels').innerHTML = `
   ${delaunaySvg(points3, delaunay3)}
   ${redPointsNumericSvg(points3)}
 </svg>
-<pre>${formatTriangleArray(delaunay3.triangles, {prefix: "delaunay.triangles == ", trianglesPerLine: 6})}</pre>
+<pre>${formatTriangleArray(delaunay3.triangles, {prefix: 'delaunay.triangles == ', trianglesPerLine: 6})}</pre>
 <figcaption>Delaunator output</figcaption>`;
 
 
