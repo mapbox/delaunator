@@ -13,8 +13,8 @@
             --serif: Cambria,Georgia,serif;
             --sans-serif: system-ui,"Segoe UI",Roboto,Oxygen-Sans,Ubuntu,Cantarell,"Helvetica Neue",sans-serif;
             --monospace: "Roboto Mono","Consolas",monospace,"Segoe UI Symbol","Symbol";
-            --background-diagram: hsl(60,10%,85%);
-            --background-samples: hsl(60,10%,90%);
+            --background-diagram: hsl(60 10% 85%);
+            --background-samples: hsl(60 10% 90%);
             font-family: var(--serif);
             font-size: 16px;
             line-height: 1.5em;
@@ -39,6 +39,7 @@
             line-height: 1.5;
             display: block;
             white-space: pre;
+            text-align: left;
             overflow-x: auto;
             padding: 0 1em 0 1em;
             background: var(--background-samples);
@@ -46,25 +47,36 @@
 
         svg:not(.plain) {
             background: var(--background-diagram);
+            display: block;
             max-width: 100%
         }
         pre, svg:not(.plain) {
-            border: 1px solid hsl(60,20%,70%);
-            box-shadow: inset 0 1px 5px 0px rgba(0,0,0,0.3);
+            border: 1px solid hsl(60 20% 70%);
+            box-shadow: inset 0 1px 5px 0px rgb(0 0 0 / 0.3);
             border-radius: 4px;
         }
 
+        text {
+            text-anchor: middle;
+            font-family: sans-serif;
+            font-size: 9px;
+            font-weight: bold;
+        }
         figure {
             font-size: small;
             text-align: center;
         }
-        .seed-points { fill: hsl(0,50%,50%); stroke: var(--background); stroke-width: 1px; }
+        .seed-points { fill: hsl(0 50% 50%); stroke: var(--background-diagram); stroke-width: 1px; }
+        .seed-labels circle { fill: hsl(0 50% 40%); stroke: var(--background-diagram); stroke-width: 1px; }
+        .seed-labels text { fill: white; }
         .vertices { fill: hsl(240,50%,50%); stroke: white; stroke-width: 1px; }
-        .edges { fill: none; stroke: black; stroke-width: 1.5px; }
-        .arrowhead { marker-end: url(#arrowhead-black); }
-        figure#diagram-halfedges .edges { stroke-width: 0.75px; }
-        figure#diagram-voronoi .edges, figure#diagram-triangles .edges { stroke: white; stroke-opacity: 0.1; }
-        .highlight .edges { stroke-width: 7.0; stroke: hsl(0,50%,80%); marker-end: unset; }
+        .edges line { fill: none; stroke: black; stroke-width: 1.5px; }
+        .arrowhead line { marker-end: url(#arrowhead-black); }
+        .edges.arrowhead text { fill: hsl(150 50% 30%); stroke: none; font-size: 7px; }
+        figure#diagram-halfedges .edges line { stroke-width: 0.75px; }
+        figure#diagram-halfedges-labels .edges line { stroke-width: 0.75px; }
+        figure#diagram-voronoi .edges, figure#diagram-triangles .edges line { stroke: white; stroke-opacity: 0.1; }
+        .highlight .edges line { stroke-width: 7.0; stroke: hsl(0 50% 80%); marker-end: unset; }
 
     </style>
     <link rel="stylesheet" href="https://unpkg.com/@highlightjs/cdn-assets@10.7.1/styles/default.min.css">
@@ -90,14 +102,22 @@
       <figure id="diagram-delaunay"></figure>
     </p>
 
+    <h2 id="representation">Data representation</h2>
+
     <p>
-      The triangulation is represented as compact arrays of integers. It’s less convenient than other representations but is the reason the library is fast.
+      The triangulation is represented as compact arrays of integers. Each input point has an index:
     </p>
 
-    <h2 id="delaunay-triangles">Delaunay triangles</h2>
+    <figure id="diagram-point-labels"></figure>
 
     <p>
-      After constructing a <code>delaunay = Delaunator.from(points)</code> object, it will have a <code>triangles</code> array and a <code>halfedges</code> array, both indexed by half-edge id. What’s a half-edge?
+      After constructing a <code>delaunay = Delaunator.from(points)</code> object, it will have a <code>triangles</code> array of point indices that form a triangle. For example, <code>4,3,1</code> in the array means there is a triangle with vertices at points 4, 3, and 1:  <!-- NOTE: the example needs to be updated if the dataset changes -->
+    </p>
+    
+    <figure id="diagram-delaunay-labels"></figure>
+
+    <p>
+      The <code>delaunay</code> object will also have a <code>halfedges</code> array. What's a half-edge?
     </p>
 
     <figure id="diagram-halfedges"></figure>
@@ -107,16 +127,22 @@
     </p>
 
     <p>
-      Half-edges <em>e</em> are the indices into both of delaunator’s outputs:
+      Half-edges are numbered by Delaunator:
+    </p>
+
+    <figure id="diagram-halfedges-labels"></figure>
+
+    <p>
+      Half-edges <em>e</em> are the indices into both of delaunator’s outputs: <!-- NOTE: the examples need to be updated if the dataset changes -->
     </p>
 
     <ul>
-      <li id="edge-to-points"><code>delaunay.triangles[e]</code> returns the point id where the half-edge starts</li>
-      <li id="edge-to-opposite"><code>delaunay.halfedges[e]</code> returns the opposite half-edge in the adjacent triangle, or -1 if there is no adjacent triangle</li>
+      <li id="edge-to-points"><code>delaunay.triangles[e]</code> returns the index of the point where the half-edge starts. For example, in the above diagram, <code>delaunay.triangles[32]</code> is point <code>1</code>.</li>
+      <li id="edge-to-opposite"><code>delaunay.halfedges[e]</code> returns the opposite half-edge in the adjacent triangle, or -1 if there is no adjacent triangle. For example, in the above diagram, <code>delaunay.halfedges[32]</code> is halfedge <code>13</code>.</li>
     </ul>
 
     <p>
-      Triangle ids and half-edge ids are related.
+      Triangle ids <em>t</em> and half-edge ids <em>e</em> are related:
     </p>
 
     <ul id="edge-and-triangle">
@@ -143,8 +169,10 @@ function prevHalfedge(e) { return (e % 3 === 0) ? e + 2 : e - 1; }
     </script>
 
     <p>
-      Note: the sample code on this page is written for readability, not performance.
+      Note: the sample code on this page is written for readability, not performance. It allocates arrays instead of reusing them. It also uses <code>Delaunator.from(points)</code> instead of the faster <code>new Delaunator(coords)</code>. If you're using a flat array, you'll need to modify the sample code that reads <code>points[i]</code> to instead read <code>[coords[2*i], coords[2*i+1]]</code>.
     </p>
+
+    <h2 id="delaunay-triangles">Delaunay triangles</h2>
 
     <h3>Delaunay edges</h3>
 
