@@ -167,18 +167,15 @@ $('#diagram-delaunay').innerHTML = `
 /** format points */
 function formatPointArray(points, {prefix, suffix, pointsPerLine}) {
     let output = '';
-    for (let row = 0; row * pointsPerLine < points.length; row++) {
-        for (let col = 0; col < pointsPerLine; col++) {
-            const i = row * pointsPerLine + col;
-            output += `[${points[i][0]},${points[i][1]}]`;
-            if (i + 1 === points.length) {
-                return `${prefix}[${output}]${suffix}`;
-            }
-            output += ', ';
-        }
-        output += '\n'.padEnd(prefix.length + 2);
+    let i = 0;
+    while (true) {
+        output += `[${points[i]}]`;
+        i++;
+        if (i === points.length) break;
+        output += ', ';
+        if (i % pointsPerLine === 0) output += '\n'.padEnd(prefix.length + 2);
     }
-    throw new Error('logic error - loop should early exit');
+    return `${prefix}[${output}]${suffix}`;
 }
 
 $('#diagram-point-labels').innerHTML = `
@@ -192,24 +189,16 @@ const delaunay = Delaunator.from(points);</pre>
 
 /** format delaunay.triangles in groups of 3 indices - works for our needs but not in general */
 function formatTriangleArray(triangles, {prefix, trianglesPerLine}) {
-    const numTriangles = triangles.length / 3;
     let output = '';
-    for (let row = 0; row < trianglesPerLine < numTriangles; row++) {
-        for (let col = 0; col < trianglesPerLine; col++) {
-            for (let vertex = 0; vertex < 3; vertex++) {
-                const t = row * trianglesPerLine + col;
-                const i = 3 * t + vertex;
-                output += triangles[i].toString(); // assume 1 digit
-                if (i + 1 === triangles.length) {
-                    return `${prefix}[${output}]`;
-                }
-                output += ',';
-            }
-            output += '  ';
-        }
-        output += '\n'.padEnd(prefix.length + 2);
+    let i = 0;
+    while (true) {
+        output += triangles.slice(i, i + 3);
+        i += 3;
+        if (i === triangles.length) break;
+        output += ',  ';
+        if ((i / 3) % trianglesPerLine === 0) output += '\n'.padEnd(prefix.length + 2);
     }
-    throw new Error('logic error - loop should early exit');
+    return `${prefix}[${output}]`;
 }
 
 $('#diagram-delaunay-labels').innerHTML = `
