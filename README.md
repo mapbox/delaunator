@@ -16,12 +16,15 @@ An incredibly fast and robust JavaScript library for
 ## Example
 
 ```js
-const coords = [168,180, 168,178, 168,179, 168,181, 168,183, ...];
-
+const coords = [377,479,  453,434,  326,387,  444,359,  511,389,
+                586,429,  470,315,  622,493,  627,367,  570,314];
 const delaunay = new Delaunator(coords);
 console.log(delaunay.triangles);
-// [623, 636, 619,  636, 444, 619, ...]
+// [4,3,1,  4,6,3,  1,5,4,  4,9,6,  2,0,1,  1,7,5,
+//  5,9,4,  6,2,3,  3,2,1,  5,8,9,  0,7,1,  5,7,8]
 ```
+
+<img src="docs/example.png" alt="Delaunay triangulation example with labeled points" width="600" />
 
 ## Install
 
@@ -63,7 +66,7 @@ Duplicate points are skipped.
 A `Uint32Array` array of triangle vertex indices (each group of three numbers forms a triangle).
 All triangles are directed counterclockwise.
 
-To get the coordinates of all triangles, use:
+To get the coordinates of all triangles when using `Delaunator.from(points)`, use:
 
 ```js
 for (let i = 0; i < triangles.length; i += 3) {
@@ -71,6 +74,18 @@ for (let i = 0; i < triangles.length; i += 3) {
         points[triangles[i]],
         points[triangles[i + 1]],
         points[triangles[i + 2]]
+    ]);
+}
+```
+
+To get the coordinates of all triangles when using `new Delaunator(coords)`, use:
+
+```js
+for (let i = 0; i < triangles.length; i += 3) {
+    coordinates.push([
+        [coords[2 * triangles[i]],     coords[2 * triangles[i] + 1]],
+        [coords[2 * triangles[i + 1]], coords[2 * triangles[i + 1] + 1]],
+        [coords[2 * triangles[i + 2]], coords[2 * triangles[i + 2] + 1]]
     ]);
 }
 ```
