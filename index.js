@@ -1,6 +1,4 @@
 
-/** @typedef {Int8Array | Uint8Array | Uint8ClampedArray | Int16Array | Uint16Array | Int32Array | Uint32Array | Float32Array | Float64Array} TypedArray */
-
 const EPSILON = Math.pow(2, -52);
 const EDGE_STACK = new Uint32Array(512);
 
