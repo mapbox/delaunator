@@ -4,3 +4,4 @@ tmp
 coverage
 delaunator.js
 delaunator.min.js
+index.d.ts
