@@ -4,8 +4,19 @@ const EDGE_STACK = new Uint32Array(512);
 
 import {orient2d} from 'robust-predicates';
 
+/** @template {ArrayLike<number>} T */
 export default class Delaunator {
 
+    /**
+     * Constructs a delaunay triangulation object given an array of points (`[x, y]` by default).
+     * `getX` and `getY` are optional functions of the form `(point) => value` for custom point formats.
+     *
+     * @template P
+     * @param {P[]} points
+     * @param {(p: P) => number} [getX]
+     * @param {(p: P) => number} [getY]
+     */
+    // @ts-expect-error TS2322
     static from(points, getX = defaultGetX, getY = defaultGetY) {
         const n = points.length;
         const coords = new Float64Array(n * 2);
@@ -19,6 +30,12 @@ export default class Delaunator {
         return new Delaunator(coords);
     }
 
+    /**
+     * Constructs a delaunay triangulation object given an array of point coordinates of the form:
+     * `[x0, y0, x1, y1, ...]` (use a typed array for best performance). Duplicate points are skipped.
+     *
+     * @param {T} coords
+     */
     constructor(coords) {
         const n = coords.length >> 1;
         if (n > 0 && typeof coords[0] !== 'number') throw new Error('Expected coords to contain numbers.');
@@ -27,23 +44,44 @@ export default class Delaunator {
 
         // arrays that will store the triangulation graph
         const maxTriangles = Math.max(2 * n - 5, 0);
-        this._triangles = new Uint32Array(maxTriangles * 3);
-        this._halfedges = new Int32Array(maxTriangles * 3);
+        /** @private */ this._triangles = new Uint32Array(maxTriangles * 3);
+        /** @private */ this._halfedges = new Int32Array(maxTriangles * 3);
 
         // temporary arrays for tracking the edges of the advancing convex hull
-        this._hashSize = Math.ceil(Math.sqrt(n));
-        this._hullPrev = new Uint32Array(n); // edge to prev edge
-        this._hullNext = new Uint32Array(n); // edge to next edge
-        this._hullTri = new Uint32Array(n); // edge to adjacent triangle
-        this._hullHash = new Int32Array(this._hashSize); // angular edge hash
+        /** @private */ this._hashSize = Math.ceil(Math.sqrt(n));
+        /** @private */ this._hullPrev = new Uint32Array(n); // edge to prev edge
+        /** @private */ this._hullNext = new Uint32Array(n); // edge to next edge
+        /** @private */ this._hullTri = new Uint32Array(n); // edge to adjacent triangle
+        /** @private */ this._hullHash = new Int32Array(this._hashSize); // angular edge hash
 
         // temporary arrays for sorting points
-        this._ids = new Uint32Array(n);
-        this._dists = new Float64Array(n);
+        /** @private */ this._ids = new Uint32Array(n);
+        /** @private */ this._dists = new Float64Array(n);
+
+        /** @private */ this.trianglesLen = 0;
+        /** @private */ this._cx = 0;
+        /** @private */ this._cy = 0;
+        /** @private */ this._hullStart = 0;
+
+
+        /** A `Uint32Array` array of indices that reference points on the convex hull of the input data, counter-clockwise. */
+        this.hull = this._triangles;
+        /** A `Uint32Array` array of triangle vertex indices (each group of three numbers forms a triangle). All triangles are directed counterclockwise. */
+        this.triangles = this._triangles;
+        /**
+         * A `Int32Array` array of triangle half-edge indices that allows you to traverse the triangulation.
+         * `i`-th half-edge in the array corresponds to vertex `triangles[i]` the half-edge is coming from.
+         * `halfedges[i]` is the index of a twin half-edge in an adjacent triangle (or `-1` for outer half-edges on the convex hull).
+         */
+        this.halfedges = this._halfedges;
 
         this.update();
     }
 
+    /**
+     * Updates the triangulation if you modified `delaunay.coords` values in place, avoiding expensive memory allocations.
+     * Useful for iterative relaxation algorithms such as Lloyd's.
+     */
     update() {
         const {coords, _hullPrev: hullPrev, _hullNext: hullNext, _hullTri: hullTri, _hullHash: hullHash} =  this;
         const n = coords.length >> 1;
@@ -66,7 +104,7 @@ export default class Delaunator {
         const cx = (minX + maxX) / 2;
         const cy = (minY + maxY) / 2;
 
-        let i0, i1, i2;
+        let i0 = 0, i1 = 0, i2 = 0;
 
         // pick a seed point close to the center
         for (let i = 0, minDist = Infinity; i < n; i++) {
@@ -124,7 +162,7 @@ export default class Delaunator {
             }
             this.hull = hull.subarray(0, j);
             this.triangles = new Uint32Array(0);
-            this.halfedges = new Uint32Array(0);
+            this.halfedges = new Int32Array(0);
             return;
         }
 
@@ -172,7 +210,7 @@ export default class Delaunator {
         this.trianglesLen = 0;
         this._addTriangle(i0, i1, i2, -1, -1, -1);
 
-        for (let k = 0, xp, yp; k < this._ids.length; k++) {
+        for (let k = 0, xp = 0, yp = 0; k < this._ids.length; k++) {
             const i = this._ids[k];
             const x = coords[2 * i];
             const y = coords[2 * i + 1];
@@ -254,10 +292,23 @@ export default class Delaunator {
         this.halfedges = this._halfedges.subarray(0, this.trianglesLen);
     }
 
+    /**
+     * Calculate an angle-based key for the edge hash used for advancing convex hull.
+     *
+     * @param {number} x
+     * @param {number} y
+     * @private
+     */
     _hashKey(x, y) {
         return Math.floor(pseudoAngle(x - this._cx, y - this._cy) * this._hashSize) % this._hashSize;
     }
 
+    /**
+     * Flip an edge in a pair of triangles if it doesn't satisfy the Delaunay condition.
+     *
+     * @param {number} a
+     * @private
+     */
     _legalize(a) {
         const {_triangles: triangles, _halfedges: halfedges, coords} = this;
 
@@ -313,7 +364,7 @@ export default class Delaunator {
 
                 const hbl = halfedges[bl];
 
-                // edge swapped on the other side of the hull (rare); fix the halfedge reference
+                // edge swapped on the other side of the hull (rare); fix the half-edge reference
                 if (hbl === -1) {
                     let e = this._hullStart;
                     do {
@@ -343,12 +394,28 @@ export default class Delaunator {
         return ar;
     }
 
+    /**
+     * Link two half-edges to each other.
+     * @param {number} a
+     * @param {number} b
+     * @private
+     */
     _link(a, b) {
         this._halfedges[a] = b;
         if (b !== -1) this._halfedges[b] = a;
     }
 
-    // add a new triangle given vertex indices and adjacent half-edge ids
+    /**
+     * Add a new triangle given vertex indices and adjacent half-edge ids.
+     *
+     * @param {number} i0
+     * @param {number} i1
+     * @param {number} i2
+     * @param {number} a
+     * @param {number} b
+     * @param {number} c
+     * @private
+     */
     _addTriangle(i0, i1, i2, a, b, c) {
         const t = this.trianglesLen;
 
@@ -366,18 +433,43 @@ export default class Delaunator {
     }
 }
 
-// monotonically increases with real angle, but doesn't need expensive trigonometry
+/**
+ * Monotonically increases with real angle, but doesn't need expensive trigonometry.
+ *
+ * @param {number} dx
+ * @param {number} dy
+ */
 function pseudoAngle(dx, dy) {
     const p = dx / (Math.abs(dx) + Math.abs(dy));
     return (dy > 0 ? 3 - p : 1 + p) / 4; // [0..1]
 }
 
+/**
+ * Squared distance between two points.
+ *
+ * @param {number} ax
+ * @param {number} ay
+ * @param {number} bx
+ * @param {number} by
+ */
 function dist(ax, ay, bx, by) {
     const dx = ax - bx;
     const dy = ay - by;
     return dx * dx + dy * dy;
 }
 
+/**
+ * Checker whether point P is inside a circle formed by points A, B, C.
+ *
+ * @param {number} ax
+ * @param {number} ay
+ * @param {number} bx
+ * @param {number} by
+ * @param {number} cx
+ * @param {number} cy
+ * @param {number} px
+ * @param {number} py
+ */
 function inCircle(ax, ay, bx, by, cx, cy, px, py) {
     const dx = ax - px;
     const dy = ay - py;
@@ -395,6 +487,16 @@ function inCircle(ax, ay, bx, by, cx, cy, px, py) {
            ap * (ex * fy - ey * fx) < 0;
 }
 
+/**
+ * Checker whether point P is inside a circle formed by points A, B, C.
+ *
+ * @param {number} ax
+ * @param {number} ay
+ * @param {number} bx
+ * @param {number} by
+ * @param {number} cx
+ * @param {number} cy
+ */
 function circumradius(ax, ay, bx, by, cx, cy) {
     const dx = bx - ax;
     const dy = by - ay;
@@ -411,6 +513,16 @@ function circumradius(ax, ay, bx, by, cx, cy) {
     return x * x + y * y;
 }
 
+/**
+ * Get coordinates of a circumcenter for points A, B, C.
+ *
+ * @param {number} ax
+ * @param {number} ay
+ * @param {number} bx
+ * @param {number} by
+ * @param {number} cx
+ * @param {number} cy
+ */
 function circumcenter(ax, ay, bx, by, cx, cy) {
     const dx = bx - ax;
     const dy = by - ay;
@@ -427,6 +539,14 @@ function circumcenter(ax, ay, bx, by, cx, cy) {
     return {x, y};
 }
 
+/**
+ * Sort points by distance via an array of point indices and an array of calculated distances.
+ *
+ * @param {Uint32Array} ids
+ * @param {Float64Array} dists
+ * @param {number} left
+ * @param {number} right
+ */
 function quicksort(ids, dists, left, right) {
     if (right - left <= 20) {
         for (let i = left + 1; i <= right; i++) {
@@ -466,15 +586,22 @@ function quicksort(ids, dists, left, right) {
     }
 }
 
+/**
+ * @param {Uint32Array} arr
+ * @param {number} i
+ * @param {number} j
+ */
 function swap(arr, i, j) {
     const tmp = arr[i];
     arr[i] = arr[j];
     arr[j] = tmp;
 }
 
+/** @param {[number, number]} p */
 function defaultGetX(p) {
     return p[0];
 }
+/** @param {[number, number]} p */
 function defaultGetY(p) {
     return p[1];
 }

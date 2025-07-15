@@ -1,0 +1,20 @@
+{
+    "compilerOptions": {
+        "module": "nodenext",
+        "target": "esnext",
+        "types": [],
+        "declaration": true,
+        "allowJs": true,
+        "checkJs": true,
+        "emitDeclarationOnly": true,
+        "strict": true,
+        "exactOptionalPropertyTypes": true,
+        "verbatimModuleSyntax": true,
+        "isolatedModules": true,
+        "moduleDetection": "force",
+        "skipLibCheck": true
+    },
+    "files": [
+        "index.js"
+    ]
+}
