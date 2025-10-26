@@ -488,7 +488,7 @@ function inCircle(ax, ay, bx, by, cx, cy, px, py) {
 }
 
 /**
- * Checker whether point P is inside a circle formed by points A, B, C.
+ * Squared radius of the circle formed by points A, B, C.
  *
  * @param {number} ax
  * @param {number} ay
