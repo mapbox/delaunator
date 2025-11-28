@@ -125,7 +125,7 @@ Benchmark results against other Delaunay JS libraries
 [faster&#8209;delaunay](https://github.com/Bathlamos/delaunay-triangulation) | 473ms | 411ms | 272ms | 68ms | 4.27s | 4.62s | 4.3s | 810ms
 [incremental&#8209;delaunay](https://github.com/mikolalysenko/incremental-delaunay) | 547ms | 505ms | 172ms | 528ms | 5.9s | 6.08s | 2.11s | 6.09s
 [d3&#8209;voronoi](https://github.com/d3/d3-voronoi) | 972ms | 909ms | 358ms | 720ms | 15.04s | 13.86s | 5.55s | 11.13s
-[delaunay&#8209;fast](https://github.com/ironwallaby/delaunay) | 3.8s | 4s | 12.57s | timeout | 132s | 138s | 399s | timeout
+[delaunay&#8209;fast](https://github.com/darkskyapp/delaunay-fast) | 3.8s | 4s | 12.57s | timeout | 132s | 138s | 399s | timeout
 [delaunay](https://github.com/darkskyapp/delaunay) | 4.85s | 5.73s | 15.05s | timeout | 156s | 178s | 326s | timeout
 [delaunay&#8209;triangulate](https://github.com/mikolalysenko/delaunay-triangulate) | 2.24s | 2.04s | OOM | 1.51s | OOM | OOM | OOM | OOM
 [cdt2d](https://github.com/mikolalysenko/cdt2d) | 45s | 51s | 118s | 17s | timeout | timeout | timeout | timeout
