@@ -459,7 +459,7 @@ function dist(ax, ay, bx, by) {
 }
 
 /**
- * Checker whether point P is inside a circle formed by points A, B, C.
+ * Check whether point P is inside a circle formed by points A, B, C.
  *
  * @param {number} ax
  * @param {number} ay
