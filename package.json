@@ -1,6 +1,6 @@
 {
   "name": "delaunator",
-  "version": "5.1.0",
+  "version": "5.1.1",
   "description": "An incredibly fast JavaScript library for Delaunay triangulation of 2D points",
   "main": "index.js",
   "module": "index.js",
@@ -46,5 +46,8 @@
     "algorithms"
   ],
   "author": "Vladimir Agafonkin",
-  "license": "ISC"
+  "license": "ISC",
+  "publishConfig": {
+    "access": "public"
+  }
 }
