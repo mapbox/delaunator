@@ -64,7 +64,7 @@ Duplicate points are skipped.
 #### delaunay.triangles
 
 A `Uint32Array` array of triangle vertex indices (each group of three numbers forms a triangle).
-All triangles are directed counterclockwise.
+All triangles are directed counterclockwise, assuming the y axis points down (as in screen coordinates); with the y axis pointing up, they are clockwise.
 
 To get the coordinates of all triangles when using `Delaunator.from(points)`, use:
 
@@ -102,7 +102,7 @@ but they're one of the key reasons this library is fast.
 
 #### delaunay.hull
 
-A `Uint32Array` array of indices that reference points on the convex hull of the input data, counter-clockwise.
+A `Uint32Array` array of indices that reference points on the convex hull of the input data, counterclockwise (assuming the y axis points down, like `triangles`).
 
 #### delaunay.coords
 

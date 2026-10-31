@@ -64,9 +64,9 @@ export default class Delaunator {
         /** @private */ this._hullStart = 0;
 
 
-        /** A `Uint32Array` array of indices that reference points on the convex hull of the input data, counter-clockwise. */
+        /** A `Uint32Array` array of indices that reference points on the convex hull of the input data, counterclockwise (assuming the y axis points down). */
         this.hull = this._triangles;
-        /** A `Uint32Array` array of triangle vertex indices (each group of three numbers forms a triangle). All triangles are directed counterclockwise. */
+        /** A `Uint32Array` array of triangle vertex indices (each group of three numbers forms a triangle). All triangles are directed counterclockwise, assuming the y axis points down. */
         this.triangles = this._triangles;
         /**
          * A `Int32Array` array of triangle half-edge indices that allows you to traverse the triangulation.
