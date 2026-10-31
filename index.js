@@ -440,7 +440,7 @@ export default class Delaunator {
  * @param {number} dy
  */
 function pseudoAngle(dx, dy) {
-    const p = dx / (Math.abs(dx) + Math.abs(dy));
+    const p = dx / (Math.abs(dx) + Math.abs(dy) || 1);
     return (dy > 0 ? 3 - p : 1 + p) / 4; // [0..1]
 }
 

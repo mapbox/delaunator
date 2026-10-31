@@ -79,6 +79,23 @@ test('issue #44', () => {
     validate(issue44);
 });
 
+test('issue #98', () => {
+    const points = [
+        [610.2154021314515, 515.6888378254126],
+        [610.2154021314516, 515.6888378254127],
+        [610.2154021314515, 515.6888378254127],
+        [610.2154021314516, 515.6888378254127]
+    ];
+    for (let i = 0; i < 30; i++) {
+        const a = 2 * Math.PI * i / 30;
+        points.push([Math.round(610 + 100 * Math.cos(a)), Math.round(516 + 100 * Math.sin(a))]);
+    }
+    const d = Delaunator.from(points);
+    validate(points, d);
+    d.update();
+    validate(points, d);
+});
+
 test('robustness', () => {
     validate(robustness1);
     validate(robustness1.map(p => [p[0] / 1e9, p[1] / 1e9]));
